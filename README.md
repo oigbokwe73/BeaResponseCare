@@ -3540,6 +3540,427 @@ Before publishing a metric, the team should be able to answer:
 
 Chapter 11 examines what must change before a static, browser-based demonstration becomes a production care-coordination platform: identity, authorization, secure APIs, authoritative data, synchronization, privacy engineering, observability, accessibility, testing, deployment, and operational support.
 
+# Chapter 11: From Prototype To Production
+
+> A prototype proves that a journey can be understood. Production proves that the journey can be trusted under real identities, real failures, real scale, and real accountability.
+
+BeaResponseCare demonstrates a connected care experience.
+
+Its pages show veteran intake, Veteran 360, coordinated entry, consent, provider capacity, bed and unit availability, placement operations, partner work, cases, and reporting. Shared JavaScript keeps behavior consistent across the page set. Sample JSON creates realistic relationships. Browser profiles support local drafts and edits. IndexedDB adds durability. A centralized API service can submit structured operations. Playwright exercises the hosted journey.
+
+This is meaningful progress. It is not a production care-coordination platform.
+
+The current login creates a local browser profile rather than authenticating against an identity provider. Role checks are implemented in client code and cannot enforce server access. Hosted JSON is a published demonstration baseline, not an authoritative transactional database. Browser storage is not a protected system of record. A credential delivered to static JavaScript cannot remain secret. Client activity history can be cleared and is not an immutable audit log.
+
+Moving to production does not mean replacing every idea in the prototype. It means preserving the validated workflows while rebuilding the trust boundary around them.
+
+## The Prototype Is A Learning Asset
+
+A prototype helps a team answer questions that architecture diagrams cannot:
+
+- Does the four-step intake feel understandable?
+- Can a coordinator navigate connected records without losing context?
+- Do the six placement steps reflect actual work?
+- Are provider matches explainable?
+- Can users distinguish local saves from remote submissions?
+- Do partner exceptions return to an accountable owner?
+- Are tables usable on desktop and mobile?
+- Which labels, statuses, and dropdowns match operational language?
+
+Those answers should become requirements, acceptance criteria, and design-system patterns.
+
+The team should inventory the prototype before redevelopment. For every page, form, field, state, validation, relationship, toast, modal, table action, and return path, it should decide whether to retain, revise, or retire the behavior. Production gaps should be explicit rather than discovered after launch.
+
+## Define The Production Boundary
+
+The first architecture decision is not a programming language. It is the system boundary.
+
+The team must identify which capabilities BeaResponseCare will own and which will remain in external systems. It may become the authoritative source for placement workflows while reading eligibility from another program system. It may own partner handoffs but send finance transactions to an accounting platform. It may present a Veteran 360 view while leaving identity stewardship with a master-person service.
+
+For each domain, define:
+
+- system of record;
+- data steward;
+- create, read, update, and delete authority;
+- event publisher and subscribers;
+- synchronization latency target;
+- conflict policy;
+- retention and archival rule; and
+- outage behavior.
+
+Without this map, integrations can create competing sources of truth.
+
+```mermaid
+flowchart LR
+    U["Veterans, coordinators, providers, leaders"] --> W["Accessible web application"]
+    W --> G["API gateway or backend-for-frontend"]
+    G --> I["Identity and policy service"]
+    G --> C["Care coordination services"]
+    G --> Q["Query and reporting APIs"]
+    C --> D["Authoritative transactional data"]
+    C --> E["Event and work queue"]
+    C --> X["External program, provider, and finance systems"]
+    E --> N["Notifications and partner integration"]
+    D --> A["Audit and compliance records"]
+    D --> R["Governed analytical layer"]
+    R --> Q
+    C --> O["Logs, metrics, traces, and alerts"]
+```
+
+The browser calls trusted APIs. It does not hold reusable service credentials or decide its own authority.
+
+## Identity Comes Before Personalization
+
+The prototype's local profile personalizes a workspace. Production identity must prove who is acting.
+
+A production authentication design should address:
+
+- workforce and partner identities;
+- veteran or authorized-representative access where offered;
+- multifactor authentication based on risk;
+- single sign-on and federation;
+- organization and tenant membership;
+- session duration and idle timeout;
+- device and location risk;
+- account recovery;
+- deprovisioning and emergency revocation; and
+- service-to-service identity.
+
+Authentication answers who the actor is. Authorization answers what that actor may do in this context.
+
+Client-side role menus can improve the interface, but the server must enforce policy on every operation. A case manager may edit an assigned case but not alter provider invoices. A consent steward may record revocation but not approve funding. A provider may update its own inventory but not view unrelated veteran histories.
+
+Attribute-based rules may consider role, organization, assigned relationship, program, geography, purpose, consent, record state, and emergency authority. Denials should be logged and explained without revealing protected data.
+
+## Put Secrets Behind Trusted Infrastructure
+
+The prototype's API service contains a placeholder for a remote key that the publish process can inject. This is suitable only for controlled demonstration.
+
+A static browser cannot securely encrypt and decrypt a reusable API secret if it also receives the decryption material. Anyone who can inspect or execute the delivered code can recover or use that credential.
+
+Production browser requests should use the authenticated user's short-lived session or token. A backend-for-frontend, API gateway, managed identity, or server-side service should hold downstream credentials in a secret manager. Secrets should be rotated, scoped, monitored, and absent from source code, static assets, logs, and client responses.
+
+Cross-origin rules, request forgery protections, rate limits, payload limits, schema validation, and abuse detection belong at the trusted boundary.
+
+## Design APIs Around Commands And Events
+
+The prototype submits operation types with structured JSON. That pattern can evolve into explicit production contracts.
+
+Commands express intent:
+
+- create veteran request;
+- complete assessment;
+- record consent;
+- hold unit;
+- approve funding;
+- confirm reservation;
+- record check-in;
+- request extension;
+- resolve exception; and
+- reconcile invoice.
+
+Events describe accepted facts:
+
+- request submitted;
+- consent revoked;
+- unit held;
+- hold expired;
+- provider declined;
+- reservation confirmed;
+- veteran checked in;
+- extension approved;
+- handoff accepted; and
+- payment issued.
+
+Commands can fail validation or authorization. Accepted commands produce durable events and updated projections. Each contract should define schema version, required identifiers, idempotency key, expected version, actor context, occurrence time, correlation ID, and error model.
+
+The API should return specific outcomes: accepted, validation failed, unauthorized, forbidden, conflict, not found, dependency unavailable, or temporarily unavailable. A generic success response does not provide enough certainty for placement work.
+
+## Build An Authoritative Data Model
+
+The JSON samples demonstrate relationships, but production data needs enforced structure.
+
+Core entities include veteran, identity evidence, household, request, assessment, consent, program enrollment, provider organization, location, unit, inventory event, hold, case, placement attempt, reservation, stay event, partner work item, communication, funding authorization, invoice, and payment.
+
+The model should enforce:
+
+- stable identifiers;
+- required and optional fields;
+- controlled vocabularies;
+- foreign-key or equivalent referential integrity;
+- effective and recorded times;
+- version and concurrency rules;
+- unique constraints;
+- state-transition rules;
+- provenance;
+- soft deletion or archival where required; and
+- retention and legal-hold behavior.
+
+Separate current-state projections from immutable or append-only operational events where appropriate. Current tables make queues fast. Event history explains how state changed.
+
+Migration from sample JSON should not be mistaken for production data conversion. Real source data requires profiling, mapping, deduplication, validation, consent review, ownership, and reconciliation.
+
+## Synchronization Must Be A Product Capability
+
+Chapter 9 described local-first states. Production turns those states into a durable synchronization protocol.
+
+A production offline or intermittent-connectivity design needs:
+
+- an encrypted local store where policy permits it;
+- a durable outbound operation queue;
+- idempotent server commands;
+- status lookup after uncertain timeout;
+- server-issued versions or change tokens;
+- field or workflow-specific conflict policies;
+- inbound change synchronization;
+- revocation and remote-clearing behavior; and
+- visible unresolved-work monitoring.
+
+```mermaid
+sequenceDiagram
+    participant B as Browser client
+    participant G as Authenticated API
+    participant S as Coordination service
+    participant D as Transactional store
+    participant E as Event bus
+
+    B->>G: Command with token, idempotency key, and expected version
+    G->>G: Authenticate, authorize, validate, and rate-limit
+    G->>S: Forward trusted actor and command
+    S->>D: Transactionally check version and apply change
+    alt accepted
+        D-->>S: New version and durable record
+        S->>E: Publish domain event
+        S-->>G: Accepted with shared reference
+        G-->>B: Receipt and synchronized version
+    else conflict or rejection
+        D-->>S: Current version or validation result
+        S-->>G: Typed failure
+        G-->>B: Preserve local work and provide resolution action
+    end
+```
+
+High-risk operations such as unit holds require transactional protection. Two clients must not both receive a successful hold for the same unit and dates.
+
+## Privacy Engineering Starts With Data Flow
+
+Privacy cannot be added by hiding a field after the system is built.
+
+The team should map every data flow: collection, browser storage, API transmission, service processing, database storage, event publication, analytics, exports, notifications, partner disclosure, backup, archival, and deletion.
+
+For each flow, identify purpose, authority, data categories, recipients, retention, safeguards, and user rights. Minimize collection and copying. Keep protected content out of URLs, analytics events, exception messages, and unstructured logs.
+
+Consent needs a dedicated service or domain model capable of evaluating person, recipient, information category, purpose, effective dates, signature, and revocation. Authorization policy should also represent other approved authorities rather than labeling every basis as consent.
+
+Encryption should protect data in transit and at rest. Key management, rotation, backup encryption, export controls, and environment separation matter as much as selecting an encryption algorithm.
+
+This book is not legal advice. Applicable federal, state, contractual, and program requirements should be interpreted with qualified privacy, security, records, and legal professionals.
+
+## Threat Modeling Makes Risk Concrete
+
+A threat model asks what can go wrong, who could cause it, and how the design reduces likelihood and impact.
+
+Relevant scenarios include:
+
+- an attacker steals a session or API token;
+- a partner user accesses another organization's records;
+- script injection reads browser-stored information;
+- a malicious export creates an unmanaged copy;
+- an insider changes priority or consent without authority;
+- two coordinators reserve the same unit;
+- a forged provider response advances a placement;
+- logs capture protected payloads;
+- a revoked user retains access;
+- backup restoration reintroduces deleted information; and
+- a dependency or publishing account is compromised.
+
+Controls include strong identity, server authorization, output encoding, content security policy, dependency review, secure headers, input validation, least privilege, immutable audit, anomaly detection, transaction isolation, signed integration messages, export controls, and incident response.
+
+Threat modeling should recur when workflows, integrations, or data categories change.
+
+## Audit Must Be Server-Side And Purposeful
+
+The prototype's local activity history helps a user resume work. Production audit must be generated and protected by trusted services.
+
+Audit events should record actor, organization, action, target, time, result, purpose, policy decision, source, correlation ID, and relevant before-and-after references. Sensitive payloads should not be copied wholesale.
+
+High-value audit events include sign-in, failed access, record view where required, export, consent creation or revocation, identity merge, priority override, hold, approval, provider decision, check-in, exception resolution, invoice adjustment, and administrative policy change.
+
+Audit storage needs access controls, tamper resistance, retention, search, alerting, and evidence procedures. Product teams should define who reviews which events and what triggers investigation.
+
+## Observability Connects Technical Health To Care
+
+Logs, metrics, and traces should reveal both software failure and operational impact.
+
+Technical signals include request latency, error rate, queue depth, database saturation, integration failure, notification delivery, cache behavior, and deployment health. Workflow signals include aging critical requests, holds near expiration, provider responses overdue, synchronization conflicts, and exceptions without owners.
+
+Correlation IDs should follow an operation across browser, gateway, service, database, event bus, notification, and partner response. Protected content should be excluded or redacted.
+
+Service objectives might include:
+
+- availability of the placement workflow;
+- successful command acceptance rate;
+- latency for creating and confirming holds;
+- maximum delay for priority events and notifications;
+- recovery-point and recovery-time objectives; and
+- age limits for queued or failed partner operations.
+
+Alerts need runbooks and owners. An alert that no one can interpret or act on only creates noise.
+
+## Accessibility Is A Release Requirement
+
+The prototype uses explicit labels, keyboard-accessible combobox patterns, responsive layouts, progress indicators, and Bootstrap components. Production must validate those patterns with people, devices, and assistive technologies.
+
+Accessibility work should include:
+
+- semantic structure and landmarks;
+- keyboard operation and visible focus;
+- screen-reader names, states, and live announcements;
+- error identification and recovery;
+- color contrast and non-color status cues;
+- zoom and reflow;
+- mobile and touch targets;
+- reduced-motion preferences;
+- accessible documents and exports;
+- plain language; and
+- user testing with disabled veterans and staff.
+
+Automated checks catch only part of the risk. Manual and assistive-technology testing should be included in acceptance criteria and regression suites.
+
+## Testing Must Follow Risk
+
+The repository includes syntax validation, seeded-data checks, and a substantial hosted Playwright flow. Production testing should expand by layer and risk.
+
+```mermaid
+flowchart TD
+    A["Static checks and unit tests"] --> B["Service and contract tests"]
+    B --> C["Database and migration tests"]
+    C --> D["Integration and partner sandbox tests"]
+    D --> E["End-to-end role and workflow tests"]
+    E --> F["Accessibility, security, and performance tests"]
+    F --> G["Resilience, backup, and recovery exercises"]
+    G --> H["User acceptance and operational simulation"]
+    H --> I["Controlled production release"]
+```
+
+Critical scenarios include identity resolution, consent revocation, priority override, concurrent holds, provider decline, missed check-in, extension collision, invoice variance, failed notification, idempotent retry, stale version, tenant isolation, export authorization, and complete data deletion.
+
+Tests need realistic but synthetic data. Production information should not be copied casually into lower environments.
+
+## Delivery Needs Controlled Environments
+
+A production delivery pipeline should build once and promote the same signed artifact through development, test, staging, and production. Environment configuration and secrets remain external to the artifact.
+
+The pipeline should include:
+
+- dependency and license checks;
+- static analysis and secret scanning;
+- unit, contract, integration, and browser tests;
+- accessibility checks;
+- infrastructure validation;
+- database migration rehearsal;
+- artifact signing and provenance;
+- approval gates based on risk;
+- deployment health checks; and
+- automated rollback or feature disablement.
+
+Feature flags can separate deployment from release, but flags need owners and expiration. Schema changes should support backward compatibility during rolling deployment.
+
+Xenhey publication is useful for the static demonstration. Production hosting requires an approved platform, domain, certificate, web-application protections, monitoring, backup, recovery, and controlled administrative access.
+
+## Operations Begin Before Launch
+
+Production readiness is an organizational capability, not only a technical milestone.
+
+The team needs:
+
+- product and service ownership;
+- data stewards;
+- privacy and security contacts;
+- support tiers and hours;
+- incident severity definitions;
+- on-call coverage;
+- runbooks;
+- partner escalation contacts;
+- release and change management;
+- business continuity procedures;
+- training and onboarding;
+- access review and deprovisioning; and
+- recurring service and governance reviews.
+
+Care operations need a downtime process. If the platform is unavailable during an urgent request, staff need an approved way to record the minimum necessary information, coordinate safely, and reconcile events when service returns.
+
+Exercises should test technical recovery and operational continuity together.
+
+## Migrate By Capability, Not By Page Count
+
+Rebuilding every page and launching at once concentrates risk.
+
+A safer path establishes shared production foundations, then releases coherent workflow slices. For example:
+
+1. identity, organizations, policy enforcement, audit, and core data services;
+2. read-only Veteran 360 and provider directory from governed sources;
+3. intake with authoritative request creation and draft recovery;
+4. assessment and consent;
+5. inventory and transactional holds;
+6. placement approval, reservation, and stay events;
+7. partner handoffs and notifications;
+8. finance reconciliation and governed reporting.
+
+Each slice should include monitoring, support, migration, rollback, training, and success measures. Dual operation may be necessary temporarily, but it needs reconciliation rules and an end date.
+
+## A Production Readiness Gate
+
+Before live protected information or care decisions enter the platform, leaders should be able to answer yes to the following questions:
+
+1. Are system-of-record boundaries and data owners documented?
+2. Are users authenticated and every server action authorized in context?
+3. Are reusable credentials absent from browser assets and source control?
+4. Are API contracts versioned, validated, idempotent, and observable?
+5. Does the data model enforce relationships, versions, and state transitions?
+6. Are consent, minimum-necessary access, retention, and disclosure logging operable?
+7. Has the system passed threat modeling and independent security review appropriate to risk?
+8. Are sensitive data encrypted, minimized, and excluded from unsafe logs and analytics?
+9. Are audit records generated and protected on trusted infrastructure?
+10. Can concurrent holds, retries, conflicts, and revocations be handled safely?
+11. Are accessibility requirements tested manually and automatically?
+12. Have backup, restore, disaster recovery, and downtime reconciliation been exercised?
+13. Are dashboards based on authoritative, synchronized events with quality indicators?
+14. Are support, incident, partner escalation, and on-call responsibilities staffed?
+15. Has a limited production pilot demonstrated safe operation before wider rollout?
+
+## Chapter Takeaways
+
+- The prototype is a validated learning asset, not disposable code or a production trust boundary.
+- Production starts by defining authoritative system and data ownership boundaries.
+- Authentication proves identity; server-side authorization enforces contextual permission.
+- Reusable service secrets must stay behind trusted infrastructure.
+- Commands express intent, events record accepted facts, and both need versioned contracts.
+- Production data requires integrity, provenance, concurrency, retention, and migration governance.
+- Local-first synchronization needs durable queues, idempotency, conflict policy, and revocation.
+- Privacy engineering follows data throughout collection, storage, sharing, analytics, and deletion.
+- Threat modeling, trusted audit, and care-aware observability make risk actionable.
+- Accessibility, resilience, and operational simulation are release requirements.
+- Controlled delivery and staffed operations are part of the product.
+- Capability-based migration reduces risk and creates measurable learning stages.
+
+## Reflection Questions
+
+1. Which prototype behaviors have been validated with actual users and should become acceptance criteria?
+2. Which system should be authoritative for each major record and event?
+3. Where does the current architecture trust the browser to make a decision the server must enforce?
+4. Which credentials, protected fields, or audit events cross an unsafe boundary today?
+5. What concurrency failure could directly affect a veteran's placement?
+6. Can every sensitive data flow identify purpose, authority, recipient, retention, and deletion behavior?
+7. Which critical workflow lacks a tested downtime and reconciliation process?
+8. Who owns production support, partner escalation, privacy review, data quality, and incident response?
+9. What is the smallest safe capability slice that can be piloted with real operational value?
+
+## Next: A Practical Implementation Roadmap
+
+Chapter 12 converts the production vision into an actionable roadmap. It organizes discovery, governance, architecture, delivery, migration, pilot, measurement, and scale into sequenced work with owners, evidence, decision gates, and outcomes.
+
+
 
 
 
