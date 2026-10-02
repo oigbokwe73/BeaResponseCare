@@ -1585,6 +1585,366 @@ Before a referral advances, the coordinator should be able to answer:
 
 Chapter 6 moves from demand to supply. It examines how provider profiles, units, availability windows, accessibility features, transportation, rates, freshness, and temporary holds combine to answer a practical question: which option is genuinely usable for this veteran at this moment?
 
+# Chapter 6: Understanding Provider Capacity
+
+> A unit is not available because a dashboard says so. It is available when the right space can be used by the right household, for the right dates, under the right terms, and the provider confirms it.
+
+Jordan Edwards needs temporary lodging in Vineland, transportation to a medical appointment, and a ground-floor or otherwise accessible room.
+
+The provider directory appears to offer several choices. Harbor Village at Vineland 260 (`PROV-09259`) reports thirteen available units, ten accessibility-ready rooms, and a veteran program rate of $122. Compass Residences at Vineland 533 (`PROV-09532`) reports three available units, eleven accessibility-ready rooms, shuttle support, and a rate of $154. Liberty Lodge at Pleasantville 083 (`PROV-09082`) reports nineteen available units and four accessibility-ready rooms, but it is in another county and does not offer shuttle support.
+
+Those numbers are useful. None of them proves that Jordan can be placed.
+
+The linked unit records tell a more complicated story. One Harbor Village accessible room is available, while another is in maintenance. A Compass unit is available but marked standard, and another is in maintenance. Inventory checks were recorded at different times. Requested dates still have to overlap. A provider may have capacity in aggregate without a suitable unit for this request.
+
+All names, addresses, and operational records in this chapter are simulated. The inconsistencies are valuable because real provider networks contain the same kinds of timing and definition problems.
+
+Understanding capacity requires moving from a count to a commitment.
+
+## Capacity Has Several Layers
+
+Organizations often use the word capacity to mean different things:
+
+- **Licensed or physical capacity:** the maximum number of rooms, beds, or people a location can support.
+- **Contracted capacity:** the portion available under a program agreement.
+- **Operational capacity:** what the provider can staff, clean, support, and safely open now.
+- **Available inventory:** units not occupied, held, reserved, blocked, or under maintenance for the relevant dates.
+- **Suitable inventory:** available units that meet the household, accessibility, location, rate, and service requirements.
+- **Confirmed capacity:** suitable inventory the provider has agreed to hold or reserve for a specific placement.
+
+Each layer narrows the possibilities. Reporting forty-nine rooms at a property says little about the space available for Jordan tonight.
+
+```mermaid
+flowchart TD
+    A["Physical capacity"] --> B["Contracted program capacity"]
+    B --> C["Operationally open capacity"]
+    C --> D["Available for requested dates"]
+    D --> E["Suitable for household and accommodations"]
+    E --> F["Within approved rate and travel constraints"]
+    F --> G["Held or reserved by provider"]
+    G --> H["Confirmed placement-ready capacity"]
+```
+
+A provider dashboard should distinguish these layers rather than presenting one large number as truth.
+
+## The Provider Profile Describes Capability
+
+A provider profile answers relatively stable questions about an organization and location. BeaResponseCare records provider ID, name, type, address, municipality, county, service area, overall capacity, accessibility indicators, program rate, transportation and meal support, contact information, status, and inventory-confirmation time.
+
+This profile is essential for discovering candidates. It should not be asked to carry every daily inventory event.
+
+Stable capability fields may include:
+
+- provider and location identifiers;
+- service type and populations served;
+- geographic service area;
+- normal check-in hours;
+- accessibility capabilities;
+- transportation, meal, language, and communication supports;
+- household, pet, and service-animal policies;
+- program participation and rate agreements;
+- primary and after-hours contacts; and
+- credential, inspection, or agreement status where applicable.
+
+These values still change, but usually less often than inventory. Their source, effective dates, verification state, and owner should remain visible.
+
+The directory should distinguish organization from location. One provider may operate several facilities with different inventory, amenities, contacts, and rates. Matching against the organization alone can send a referral to the wrong site.
+
+## The Unit Record Describes A Place In Time
+
+The unit or bed record answers a narrower question: what exactly can be used, when, and in what state?
+
+BeaResponseCare unit records include unit ID, provider, unit type, municipality, county, capacity, accessibility, status, hold and expiration, reservation, placement, case, check-in time, available-from date, conflict state, freshness, organization, and version.
+
+An operational unit state might be:
+
+- available;
+- held;
+- reserved;
+- occupied;
+- cleaning or turnover;
+- maintenance;
+- blocked by the provider;
+- unavailable because of staffing; or
+- closed for another documented reason.
+
+These are not interchangeable. A unit in cleaning may become available later the same day. A maintenance unit may have no dependable release time. An occupied unit with a planned checkout is not available until turnover is confirmed.
+
+Status needs an effective period. "Available" without dates can be misleading when a room is open tonight but reserved tomorrow.
+
+## Availability Is A Date-Range Calculation
+
+Jordan's request has a check-in and check-out date. Matching must evaluate the entire interval.
+
+A unit is a date match only if its availability window covers every required night and no overlapping hold, reservation, occupancy, maintenance block, or blackout period conflicts with the stay. Comparing only the check-in date can create a mid-stay collision.
+
+The system should define boundary rules clearly. If one placement checks out on October 4 and another checks in on October 4, is same-day turnover supported? The answer may depend on unit type, cleaning time, staffing, and provider policy.
+
+Inventory events should preserve both effective time and recorded time. A provider may enter at 10:00 a.m. that a unit became unavailable at 8:00 a.m. Both timestamps matter when investigating a conflict.
+
+Recurring blocks, partial-day availability, and extension options add complexity. The data model should represent them directly rather than relying on free-text notes that matching cannot evaluate.
+
+## Freshness Is Part Of The Match
+
+Inventory is perishable information.
+
+BeaResponseCare counts provider inventory confirmed within twenty-four hours, but an appropriate freshness threshold depends on urgency and market conditions. For a same-day placement in a tight market, an update six hours old may be too stale. For planned transitional housing, a daily confirmation may be sufficient.
+
+A capacity record should show:
+
+- when the provider last confirmed it;
+- who supplied the update;
+- how it was received;
+- the effective date range;
+- the next required confirmation time; and
+- whether another event has made it stale.
+
+The matching engine should reduce confidence or require reconfirmation when inventory exceeds the threshold. It should not silently exclude every stale record if doing so would hide potential options. "Possible, confirmation required" is different from "unavailable."
+
+Freshness also applies to capability fields. An accessibility claim verified a year ago may need review even when today's room count is current.
+
+## Accessibility Must Be Specific
+
+An `accessible: Yes` field is not enough to determine suitability.
+
+Jordan's request calls for a ground-floor room. Another veteran may need wheelchair clearance, a roll-in shower, an accessible route from parking, visual alarms, a refrigerator for medication, or a communication accommodation. A property can have accessible rooms while the only open unit is standard.
+
+Provider-level accessibility describes capability. Unit-level accessibility describes the actual candidate. Matching should use the more specific record and require confirmation when detail is missing.
+
+Useful unit-level attributes include:
+
+- step-free route;
+- floor and elevator access;
+- doorway and maneuvering clearance;
+- accessible bathroom features;
+- bed height or transfer space;
+- visual or audible alerts;
+- service-animal support;
+- accessible parking and drop-off; and
+- known temporary equipment or maintenance limitations.
+
+The goal is not to collect a medical diagnosis. It is to identify the functional features needed for safe use.
+
+Accessibility claims need a source. Provider self-report, contractual certification, inspection, and veteran feedback are different forms of evidence. The system can preserve the source and last verification without forcing users to infer certainty from a checkbox.
+
+## Transportation Changes What Is Usable
+
+Compass reports shuttle support; Harbor Village and Liberty Lodge do not. That difference may outweigh room rate or distance for Jordan.
+
+"Shuttle support" also needs detail. Does the service operate on the appointment date? Does it reach the destination? Is advance booking required? Is it wheelchair accessible? Does it run after check-in? Who pays for it?
+
+A provider without a shuttle may remain suitable if a transportation partner can fill the gap. In that case, the match should include both the lodging option and the transport plan. Capacity is not only a property attribute; it can be the result of coordinated services.
+
+Travel time should be evaluated using the actual destination and service window, not county alone. A provider in another county may be closer than one elsewhere in the requested county. The system should explain how distance or travel time was calculated and allow a coordinator to account for local knowledge.
+
+## Rate Is More Than A Number
+
+The provider profile lists a veteran program rate. Before treating it as usable, the team needs to know what it covers.
+
+A rate record may require:
+
+- amount and currency;
+- unit, such as nightly or monthly;
+- effective dates;
+- taxes and fees;
+- included meals or transportation;
+- household or occupancy limits;
+- weekend or seasonal changes;
+- cancellation terms;
+- extension pricing;
+- authorizing contract or agreement; and
+- approval threshold.
+
+For Jordan, a $122 room without transportation may be more expensive operationally than a $154 room with a usable shuttle. Price comparison should include necessary ancillary services and the risk of a failed match.
+
+The matching process can flag when a rate exceeds a program ceiling, but an authorized funding review should make the final decision. The system should preserve the quoted rate, approved rate, approver, date, and reason for any exception.
+
+## Matching Uses Hard Constraints And Preferences
+
+Not all criteria have the same meaning.
+
+A **hard constraint** makes an option unusable or unauthorized: no unit for the full date range, insufficient capacity, an unmet essential accessibility need, a prohibited rate, or a provider unable to serve the required program.
+
+A **preference** helps rank otherwise usable choices: closer location, meal support, lower rate, familiar provider, or a quieter setting.
+
+Treating hard constraints as points can produce a dangerous result. A provider should not rank first because it scores well on price and location while failing the required accessibility condition.
+
+```mermaid
+flowchart TD
+    A["Candidate provider and unit"] --> B{"Dates fully available?"}
+    B -- "No" --> X["Exclude and record reason"]
+    B -- "Yes" --> C{"Household capacity sufficient?"}
+    C -- "No" --> X
+    C -- "Yes" --> D{"Required accessibility met?"}
+    D -- "No" --> X
+    D -- "Yes" --> E{"Program and rate permitted?"}
+    E -- "No" --> Y["Route for authorized exception or exclude"]
+    E -- "Yes" --> F["Score preferences"]
+    F --> G["Check transport, distance, services, and freshness"]
+    G --> H["Present explainable shortlist"]
+    H --> I["Provider confirmation and hold"]
+```
+
+The shortlist should show why each option appears, which facts were confirmed, what remains uncertain, and why another option was excluded. Explainability enables a coordinator to catch bad data before it becomes a failed placement.
+
+## Aggregate And Unit Data Must Reconcile
+
+Provider `PROV-09532` reports three available units and eleven accessible rooms. Its displayed unit examples include one available standard room and one unit in maintenance. This is not necessarily a contradiction because the sample unit table may not represent every room. It is a signal that the aggregate and unit-level datasets have different grains.
+
+The interface should state whether aggregate counts are calculated from complete unit records, supplied separately by the provider, or sampled. If unit-level inventory is complete, totals should reconcile automatically. If it is partial, users should not assume the listed units explain the aggregate number.
+
+Reconciliation controls can detect:
+
+- available-unit counts below active holds and reservations;
+- accessible-unit counts above total capacity;
+- units marked available while the provider is closed;
+- aggregate availability with no effective date;
+- occupied units without placements;
+- held units after hold expiration; and
+- duplicate reservations for the same unit and dates.
+
+An inconsistency should create owned review work. Silently forcing the numbers to agree can erase useful evidence about where the data pipeline failed.
+
+## A Hold Protects A Decision Window
+
+Once a suitable option is found, the coordinator may need time for approval, provider review, or veteran confirmation. A hold temporarily protects the unit from competing placement attempts.
+
+A valid hold needs:
+
+- hold ID;
+- provider and unit;
+- request, case, and placement references;
+- quantity where inventory is pooled;
+- start and expiration time;
+- creator and reason;
+- status;
+- provider acknowledgment; and
+- release, conversion, or expiration event.
+
+The expiration must be visible in the coordinator's time zone and processed reliably. A hold should not remain active merely because no user opened the page to expire it.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Available
+    Available --> Held: create acknowledged hold
+    Held --> Available: release or expire
+    Held --> Reserved: provider confirms reservation
+    Reserved --> Occupied: check-in confirmed
+    Reserved --> Available: cancellation and turnover complete
+    Occupied --> Turnover: checkout
+    Turnover --> Available: readiness confirmed
+    Available --> Maintenance: block unit
+    Maintenance --> Available: return-to-service confirmed
+```
+
+State transitions should use version checks or another concurrency control. Two coordinators attempting to hold the same unit must not both receive success.
+
+## Conflicts Need Resolution, Not Just Alerts
+
+A conflict may occur when two holds overlap, the provider withdraws inventory, an extension collides with the next reservation, or local and shared records disagree.
+
+The Bed and Unit Board marks a conflict status, but an alert alone does not restore capacity. Each conflict needs an owner, severity, response deadline, affected placements, and resolution path.
+
+Resolution may involve releasing an expired hold, finding another unit, obtaining an extension exception, correcting a duplicate event, or contacting the provider. The system should preserve the original events and record why the final state changed.
+
+For high-risk conflicts, the interface should prevent downstream confirmation until review is complete. For uncertain but nonblocking differences, it can allow work to continue with a visible warning and required acknowledgment.
+
+## Provider Confirmation Is A Human Commitment
+
+Algorithmic matching produces candidates. Provider confirmation creates an operational commitment.
+
+The provider should receive a minimum-necessary referral containing the dates, household requirements, accommodation needs, rate or authorization context, and response deadline. Consent must cover the recipient, categories, purpose, and time.
+
+The response should be structured:
+
+- accepted;
+- declined;
+- more information required;
+- alternative unit or dates offered; or
+- no response by deadline.
+
+A decline reason such as no inventory, unmet accommodation, rate, policy, staffing, or timing improves future matching. Free text can supplement the category but should not replace it.
+
+Provider silence is not acceptance. A placement should not move to confirmed merely because a response deadline passed.
+
+## Local Inventory And Shared Capacity
+
+BeaResponseCare allows inventory updates to be saved to the active local profile and IndexedDB, with an option to submit an event to a shared endpoint. This enables fast local operation while demonstrating the distinction between local and network state.
+
+An inventory event should include provider, inventory date, available and accessible unit counts, rate, blackout dates, notes, recorder, and timestamp. Its interface state should clearly say whether the update is local, queued, synchronized, rejected, or conflicted.
+
+Refreshing hosted data should preserve local unsynchronized changes. When a shared update conflicts with a local one, the system should compare versions and effective dates rather than applying last-write-wins automatically.
+
+Capacity is especially sensitive to stale local overrides. A coordinator should not create a hold from inventory that only exists on another user's device. Production systems need durable shared transactions, authentication, authorization, and monitoring around holds and reservations.
+
+## Capacity Measures That Support Decisions
+
+Large totals can hide operational weakness. Useful measures connect supply to usability and time:
+
+- physical, contracted, operational, and available units;
+- available units covering the requested date ranges;
+- accessible units by specific feature;
+- inventory confirmed within the required freshness threshold;
+- provider response and confirmation time;
+- hold conversion, release, and expiration rates;
+- conflicts by cause and time to resolution;
+- decline rate and structured decline reasons;
+- matches excluded by accessibility, transport, rate, dates, or household size;
+- utilization and turnover time;
+- placements requiring rate exceptions; and
+- failed arrivals or relocations attributable to capacity data.
+
+The denominator matters. "Ninety percent availability accuracy" is not meaningful unless the organization defines which records, period, and confirming events were used.
+
+## A Capacity Review Checklist
+
+Before presenting a provider as placement-ready, the coordinator should be able to answer:
+
+1. Is this the correct provider location rather than only the parent organization?
+2. Does inventory cover the complete requested date range?
+3. Is the unit operationally available, not held, reserved, occupied, or blocked?
+4. Does it support the full household and service-animal needs?
+5. Are required accessibility features confirmed at unit level?
+6. Is transportation workable for the destination and schedule?
+7. Is the inventory fresh enough for this request's urgency?
+8. Is the rate effective, complete, and within authorization limits?
+9. Do aggregate counts and unit-level records have a known relationship?
+10. Are competing holds or extension conflicts clear?
+11. Has the provider acknowledged the hold or reservation?
+12. Is the confirmation state shared, durable, and visible to other coordinators?
+
+## Chapter Takeaways
+
+- Capacity narrows from physical space to confirmed, suitable inventory.
+- Provider profiles describe capability; unit records describe specific places and states.
+- Availability must cover the entire requested date range.
+- Freshness is part of match confidence and depends on operational urgency.
+- Accessibility must be expressed as functional unit-level features, not a generic property label.
+- Transportation and ancillary services can determine whether lodging is usable.
+- Rate review should include terms and necessary supporting services.
+- Hard constraints exclude options; preferences rank options that remain usable.
+- Aggregate and unit data must declare their grain and reconciliation rules.
+- Holds protect a limited decision window and require acknowledged, conflict-safe state transitions.
+- Provider confirmation, not algorithmic ranking, creates the operational commitment.
+- Local inventory changes are not shared capacity until synchronization is confirmed.
+
+## Reflection Questions
+
+1. How many different meanings of capacity appear in your current reports?
+2. Can staff determine whether availability covers every night of a requested stay?
+3. Are accessibility features stored at the provider level, unit level, or both?
+4. What freshness threshold applies to same-day placements, and who confirms it?
+5. Does matching exclude hard failures before scoring preferences?
+6. Can aggregate provider counts be reconciled to unit-level inventory?
+7. What prevents two coordinators from holding the same unit?
+8. How are provider declines categorized and used to improve future matches?
+9. Can every coordinator see whether an inventory update is local or shared?
+
+## Next: The Six-Step Placement Journey
+
+Chapter 7 follows a suitable match through triage, hold, approval, reservation, stay monitoring, finance, and communication. It shows how six connected operational steps turn provider capacity into an accountable placement without losing the veteran, request, consent, or decision history along the way.
+
+
 
 
 
