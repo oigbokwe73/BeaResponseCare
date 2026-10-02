@@ -2379,7 +2379,7 @@ If one of these elements is missing, the work can remain technically sent but op
 ```mermaid
 flowchart LR
     A["Sender prepares minimum-necessary handoff"] --> B["Recipient receives notification"]
-    B --> C{"Recipient acknowledges?"}
+    B --> C["Recipient acknowledges?"]
     C -- "No" --> D["Retry, alternate channel, or escalate"]
     C -- "Yes" --> E["Recipient accepts ownership"]
     E --> F["Recipient acts or requests clarification"]
