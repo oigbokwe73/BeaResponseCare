@@ -2346,6 +2346,364 @@ Before declaring a placement complete, the team should be able to answer:
 
 Chapter 8 moves beyond the placement team's internal workflow to the boundaries between organizations. It examines provider responses, service-level tasks, acknowledgments, exceptions, escalation, accessible notifications, and transition plans so that every handoff ends with accepted ownership or a visible return path.
 
+# Chapter 8: Closing Partner Handoffs
+
+> A handoff is not complete when information leaves one organization. It is complete when the next party accepts responsibility, acts, or returns the work through a visible path.
+
+Jordan Edwards's placement journey crosses an organizational boundary.
+
+The placement team needs a provider to accept a reservation. The provider needs enough information to determine whether the request can be supported. A case manager needs to know the outcome. Jordan needs understandable instructions. A funding authority may need evidence. If the reservation fails, someone must reopen matching before the deadline becomes another night without lodging.
+
+Partner work item `P1-70489` shows what happens when that boundary does not close cleanly. It links placement `PLC-11259`, request `REQ-26259`, case `CASE-11259`, veteran `VET-30259`, and provider `PROV-09532`. The work type is exception resolution. The reason is reservation declined. Monica Price owns the high-priority item, the status is open, and the next action is to document the resolution.
+
+This record is more than a reminder. It is the operational bridge between a failed provider decision and the next coordinated action.
+
+All names, providers, identifiers, and situations in this chapter are simulated.
+
+## Handoffs Are Agreements About Work
+
+A referral, email, or API request moves information. A handoff moves responsibility.
+
+That distinction is essential in a multi-organization care network. A sender can prove that a message left its system without proving that the receiving party saw it, understood it, accepted it, or acted in time.
+
+A closed-loop handoff has five elements:
+
+1. **Purpose:** the receiver understands what decision or action is requested.
+2. **Context:** the receiver has the minimum information necessary to act.
+3. **Ownership:** a named person, role, or queue accepts responsibility.
+4. **Time:** the expected response and escalation deadlines are visible.
+5. **Outcome:** acceptance, decline, completion, or return is recorded and communicated.
+
+If one of these elements is missing, the work can remain technically sent but operationally ownerless.
+
+```mermaid
+flowchart LR
+    A["Sender prepares minimum-necessary handoff"] --> B["Recipient receives notification"]
+    B --> C{"Recipient acknowledges?"}
+    C -- "No" --> D["Retry, alternate channel, or escalate"]
+    C -- "Yes" --> E["Recipient accepts ownership"]
+    E --> F["Recipient acts or requests clarification"]
+    F --> G{"Outcome reached?"}
+    G -- "Accepted or completed" --> H["Record evidence and notify stakeholders"]
+    G -- "Declined or blocked" --> I["Record reason and return to defined owner"]
+    D --> C
+    I --> A
+```
+
+The loop is deliberate. Declining a request can be a valid outcome. Allowing it to disappear is not.
+
+## A Shared Work Item Creates The Contract
+
+BeaResponseCare's partner-operations record gives each cross-organizational action a coordination ID and links it to the placement journey. It records work type, provider, owner, priority, deadline, status, outcome, reason, communication channel, delivery state, transition plan, next action, organization, and version.
+
+The record acts as a small operational contract. It says what is expected, who owns it, and how closure will be demonstrated.
+
+A strong work item includes:
+
+- unique coordination identifier;
+- related veteran, request, case, placement, provider, and unit references as needed;
+- sending and receiving organizations;
+- work type and purpose;
+- accountable owner and backup queue;
+- priority and response deadline;
+- consent or other sharing authority;
+- minimum-necessary information categories;
+- current status and next action;
+- response, reason, and supporting reference;
+- communication attempts and delivery state;
+- version, timestamps, and synchronization state; and
+- closure criteria.
+
+The closure criteria should be defined when the item is created. Otherwise, teams can disagree about whether "sent," "accepted," or "completed" means the work is finished.
+
+## Five Partner Workflows
+
+The partner queue separates five kinds of handoff because they have different evidence and return paths.
+
+### Provider Response
+
+A provider-response item asks a provider to accept, decline, request more information, or offer an alternative. It should include the decision deadline, requested dates, household constraints, required accommodations, rate context, and a protected method for reviewing the authorized referral.
+
+Closure requires a structured response from an authorized provider representative. Silence is not acceptance.
+
+An accepted response should identify the location, unit or inventory commitment, hold or reservation reference, conditions, and responder. A decline should record a reason such as no inventory, unmet accommodation, rate, dates, policy, staffing, or insufficient information.
+
+If more information is requested, the item remains open with a new owner and deadline. The system must verify that consent permits the additional disclosure before sending it.
+
+### SLA Task
+
+An SLA task represents time-bound internal or partner work, such as eligibility verification, funding review, provider follow-up, or supervisor approval.
+
+Closure requires the requested decision or artifact, not merely a note saying contact was attempted. An overdue task should escalate according to priority and risk. Escalation adds support and authority; it does not silently remove the original owner.
+
+The task should preserve the original deadline, each escalation time, who was notified, and the revised commitment. Repeated deadline changes without a reason can hide delay.
+
+### Event Notification
+
+An event notification tells a person or organization that something material changed: placement assigned, hold expiring, provider declined, funding approved, reservation confirmed, check-in missed, extension decided, or relocation required.
+
+Closure depends on the event. Some notifications require only successful delivery. Others require acknowledgment or action. A prepared message is not sent; a sent message is not necessarily delivered; a delivered message is not necessarily understood.
+
+The record should preserve audience, channel, accessibility requirement, delivery status, retries, acknowledgment, and related event. Failed delivery should create follow-up work through another permitted channel.
+
+### Extension And Transition
+
+An extension-and-transition item coordinates additional nights and the move beyond temporary lodging. It may involve the provider, funder, case manager, veteran, and longer-term housing partner.
+
+Closure requires more than an extension decision. The record should show the approved dates and amount, updated reservation, provider confirmation, veteran communication, and transition plan. If the extension is declined, an alternate plan needs an owner and deadline before the current stay ends.
+
+Transition work should begin early enough to avoid turning the checkout date into an emergency.
+
+### Exception Resolution
+
+An exception item responds to a broken expected path: no inventory, reservation decline, missed arrival, urgent relocation, conflicting hold, failed transport, or another operational barrier.
+
+Closure requires the exception to be resolved, transferred through an accepted handoff, or closed with a documented final outcome. "Document resolution" is a next action, not closure evidence.
+
+Jordan's item should remain open until the case and placement records agree on what happened and who owns the next step.
+
+## Sending, Delivery, Acknowledgment, And Acceptance
+
+Communication systems use similar words for different states. Partner operations must define them precisely.
+
+- **Prepared:** the content exists but has not left the sender's control.
+- **Sent:** the system attempted transmission.
+- **Delivered:** the destination system or channel reported receipt.
+- **Acknowledged:** a recipient confirmed seeing the item.
+- **Accepted:** the recipient agreed to own the requested work.
+- **Completed:** the requested outcome was produced and recorded.
+- **Declined:** the recipient explicitly refused or could not perform the work.
+- **Failed:** delivery or processing did not reach the expected state.
+
+These states should not be collapsed. An email delivery receipt does not assign a case owner. A provider portal acknowledgment does not prove reservation acceptance. A completed task does not prove the veteran received an update.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Prepared
+    Prepared --> Sent: transmit
+    Sent --> Delivered: channel confirms
+    Sent --> Failed: delivery error or timeout
+    Delivered --> Acknowledged: recipient opens or confirms
+    Acknowledged --> Accepted: ownership accepted
+    Acknowledged --> Declined: cannot accept
+    Accepted --> Completed: requested outcome recorded
+    Accepted --> Blocked: clarification or dependency required
+    Blocked --> Accepted: dependency resolved
+    Failed --> Sent: approved retry
+    Declined --> [*]
+    Completed --> [*]
+```
+
+Not every channel can prove every state. A phone call may require a staff-entered outcome. An SMS provider may report delivery but not comprehension. The system should record the evidence actually available rather than presenting an inferred state as fact.
+
+## Ownership Must Cross The Boundary
+
+A handoff is vulnerable during the period when the sender believes responsibility has moved but the receiver has not accepted it.
+
+The sender remains accountable until one of three things happens:
+
+- the receiving party accepts ownership;
+- a documented policy assigns ownership automatically after verified receipt; or
+- an escalation path assigns a new owner.
+
+This rule prevents the phrase "I sent it" from becoming the end of coordination.
+
+Shared queues can own work temporarily, but a queue needs staffing, monitoring, and routing rules. "Provider Success Queue" is meaningful only if someone is responsible for its age and coverage. At high priority, a named person may be required.
+
+Ownership history should record offered-to, accepted-by, reassigned-by, and effective times. A receiving organization should be able to reject an item routed incorrectly without making it disappear.
+
+## Deadlines Need Escalation Ladders
+
+Every partner task should have a response expectation proportionate to urgency.
+
+An escalation ladder defines what happens before and after a deadline:
+
+- reminder before due time;
+- owner alert at risk threshold;
+- backup queue notification;
+- supervisor escalation;
+- alternate channel or contact;
+- protective action such as rematching; and
+- program leadership review for persistent failures.
+
+Escalation should not wait for a scheduled report. For an expiring hold or same-day lodging request, delay can remove the available option.
+
+The system should consider business hours, time zones, after-hours coverage, and provider schedules. A two-hour SLA assigned at closing time is not meaningful unless after-hours service exists.
+
+Deadline changes need reasons. Pausing a clock may be appropriate while waiting for veteran input, but the pause, authority, and next review time should remain visible.
+
+## Minimum-Necessary Context At The Boundary
+
+Partner handoffs create disclosure risk because information crosses organizational boundaries.
+
+Before sending, the workflow should verify the person, recipient, information categories, purpose, and time against consent or another approved authority. The referral package should contain only what the partner needs to complete the assigned work.
+
+A lodging provider may need dates, household size, functional accommodations, transport coordination, rate authorization, and a contact route. It may not need vulnerability scores, complete service history, or unrelated eligibility documents.
+
+The work item should link to the protected source rather than copying sensitive details into unrestricted notes. If the receiving party asks for more information, the coordinator should evaluate the request rather than forwarding the complete profile.
+
+Disclosure and handoff are connected but not identical. The disclosure log records what information moved. The work item records who owns the resulting action.
+
+## Accessible Communication Is Operational
+
+Notification is useful only when the recipient can receive and understand it.
+
+Veteran preferences and needs may require phone, SMS, email, secure message, interpreter support, plain language, large text, or communication through an authorized representative. Provider contacts may have distinct operational and after-hours channels.
+
+The partner record should preserve the selected channel and delivery result without placing sensitive content in an insecure medium. A message can direct the recipient to a protected portal rather than carrying full details.
+
+When delivery fails, the workflow should select an approved alternative and maintain urgency. Repeating the same failed channel is not a recovery plan.
+
+Acknowledgment requests should be specific. "Reply YES to confirm you received the check-in address and arrival time" produces clearer evidence than an open-ended message, while still providing a path for questions or correction.
+
+## Exceptions Need A Resolution Pattern
+
+Jordan's reservation decline demonstrates the anatomy of an exception.
+
+The trigger is known. The related placement, request, case, veteran, and provider are linked. An owner, priority, deadline, status, and next action exist. The missing element is the documented resolution.
+
+A closed-loop exception process should:
+
+1. detect or receive the exception;
+2. preserve the original event and source;
+3. assess immediate safety and service impact;
+4. assign an owner and deadline;
+5. notify affected people and organizations;
+6. choose a corrective path;
+7. execute and verify the corrective action;
+8. reconcile connected record states;
+9. communicate the outcome; and
+10. close with evidence and a reason category.
+
+```mermaid
+sequenceDiagram
+    participant P as Provider
+    participant Q as Partner queue
+    participant O as Exception owner
+    participant M as Placement workflow
+    participant V as Veteran
+
+    P->>Q: Decline reservation with reason
+    Q->>O: Assign high-priority exception and deadline
+    O->>M: Mark attempt unsuccessful and reopen matching
+    O->>V: Explain change and next action through preferred channel
+    M-->>O: Return alternate match or escalation
+    O->>Q: Record verified corrective outcome
+    Q->>M: Reconcile placement and case state
+    Q-->>P: Close or request final confirmation
+    Q-->>V: Confirm resolution and updated instructions
+```
+
+If no alternative is available, closure may be an escalated unresolved outcome rather than a successful placement. The record must be honest about the service result.
+
+## Transition Plans Are Shared Commitments
+
+Temporary lodging can create a dangerous illusion of resolution. A room solves an immediate problem but may not create durable housing.
+
+A transition plan should identify the target outcome, actions, owners, dependencies, dates, and contingency plan. It may include benefits appointments, housing applications, landlord engagement, transportation, document collection, clinical coordination, or another program referral.
+
+Each partner should accept the tasks assigned to it. A plan listing an organization without acknowledgment is only an intention.
+
+The veteran should participate in defining the plan. The plan should reflect goals and constraints rather than becoming a schedule imposed by the network. Changes should be communicated in accessible language.
+
+As checkout approaches, the workflow should increase visibility of unresolved dependencies. If a longer-term option is not ready, the team needs an extension or alternate plan before the stay expires.
+
+## Versioning And Conflict Across Organizations
+
+Two organizations may update the same handoff from different systems or at different times. A provider may decline while a coordinator is recording acceptance from a phone call. A case manager may extend a deadline while an escalation process marks it overdue.
+
+Partner work needs version checks, idempotent submissions, correlation IDs, and preserved event history. A conflict should display both versions, their actors, times, and sources.
+
+High-risk conflicts should block automatic closure. An authorized reviewer can reconcile the records and document the decision. Last-write-wins is especially dangerous when the latest update is merely the latest to synchronize, not the latest to occur.
+
+Local-first updates must show whether they are saved only in the browser, queued, synchronized, rejected, or conflicted. Other organizations cannot act on state that exists only on one device.
+
+## Closure Evidence By Work Type
+
+The partner queue should enforce closure evidence appropriate to the workflow:
+
+| Work type | Minimum closure evidence |
+| --- | --- |
+| Provider Response | Authorized acceptance, decline, information request, or alternative with responder and time |
+| SLA Task | Requested decision or artifact, outcome, completer, and completion time |
+| Event Notification | Required delivery or acknowledgment state, channel, recipient, and retry outcome |
+| Extension & Transition | Decision, approved dates or alternate plan, assigned actions, and affected-party notification |
+| Exception Resolution | Verified corrective or final outcome, reconciled connected states, reason, and communications |
+
+Closure should be reversible through a new event, not by deleting the prior outcome. If new information shows that a supposedly completed handoff failed, the system reopens or creates linked corrective work with a reason.
+
+## Measures That Reveal Handoff Quality
+
+Counting messages sent does not measure coordination.
+
+Useful measures include:
+
+- time from handoff creation to recipient acknowledgment;
+- time from acknowledgment to ownership acceptance;
+- percentage accepted before the response deadline;
+- provider acceptance, decline, and no-response rates;
+- structured decline reasons;
+- overdue and escalated SLA tasks;
+- notification delivery, acknowledgment, and retry success;
+- extensions decided before checkout;
+- transition plans with all actions accepted;
+- exceptions by type, age, and resolution;
+- handoffs closed without required evidence;
+- reopened work items;
+- version conflicts and synchronization delay; and
+- placements adversely affected by late or failed handoffs.
+
+Measures should be segmented by partner, workflow, urgency, channel, time of day, and service type. They should support improvement and contract management, not encourage partners to accept inappropriate work simply to protect a metric.
+
+## A Partner-Handoff Checklist
+
+Before considering a handoff closed, the coordinator should be able to answer:
+
+1. Is the requested action and purpose clear?
+2. Does the recipient have only the information needed to act?
+3. Is sharing permitted for this recipient, purpose, information, and time?
+4. Has a person, role, or monitored queue accepted ownership?
+5. Are response and escalation deadlines visible?
+6. Is the difference between sent, delivered, acknowledged, accepted, and completed preserved?
+7. If the recipient declined, is the reason structured and the work returned to an owner?
+8. Did failed delivery trigger an appropriate alternate channel?
+9. Are exceptions linked to the placement and reconciled with case state?
+10. Does an extension include provider, funding, veteran, and transition updates?
+11. Is the shared state synchronized and conflict-free?
+12. Does closure include evidence appropriate to the work type?
+
+## Chapter Takeaways
+
+- Sending information is not the same as transferring responsibility.
+- A closed-loop handoff needs purpose, context, ownership, time, and outcome.
+- Shared work items act as operational contracts across organizational boundaries.
+- Provider responses, SLA tasks, notifications, transitions, and exceptions require different closure evidence.
+- Sent, delivered, acknowledged, accepted, and completed are distinct states.
+- The sender remains accountable until ownership is accepted or reassigned through policy.
+- Escalation ladders should trigger protective action before deadlines cause harm.
+- Minimum-necessary disclosure and operational ownership must both be recorded.
+- Accessible communication and alternate channels are part of workflow reliability.
+- Exceptions require corrective action, connected-state reconciliation, and outcome communication.
+- Transition plans become real only when partners accept their assigned actions.
+- Local or conflicted updates cannot be treated as shared partner state.
+
+## Reflection Questions
+
+1. Which handoffs in your organization are considered complete when a message is merely sent?
+2. Can the receiving party accept or reject ownership explicitly?
+3. Does every partner task define closure evidence at creation time?
+4. What protective action occurs when a critical response deadline is missed?
+5. Can users distinguish delivery confirmation from human acknowledgment?
+6. How does a decline return work to a named owner without losing history?
+7. Are extension and transition tasks accepted by every responsible partner?
+8. Can cross-system version conflicts block inappropriate closure?
+9. Which metric best reveals handoffs that appear complete but did not produce action?
+
+## Next: Local-First Operations And Trust
+
+Chapter 9 examines how browser profiles, local storage, IndexedDB, hosted baselines, remote submissions, refresh, conflict handling, and clear synchronization states can preserve work during disruption without misleading users about what the wider network knows.
+
+
 
 
 
