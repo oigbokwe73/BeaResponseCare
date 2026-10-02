@@ -3101,6 +3101,445 @@ Before describing a workflow as local-first, the team should be able to answer:
 
 Chapter 10 turns the connected journey into a measurement system. It defines the grain, denominators, time windows, quality checks, equity views, service-level measures, and outcome indicators needed to understand whether faster workflows are producing safer placements and more stable transitions.
 
+# Chapter 10: Measuring Outcomes
+
+> A faster workflow is valuable only when it helps people reach safer, more stable outcomes without hiding who was delayed, declined, or lost between steps.
+
+BeaResponseCare can count requests, placements, active stays, providers, open cases, extensions, unsuccessful matches, hours to placement, utilization, and cost.
+
+Those numbers create visibility. They do not automatically create understanding.
+
+A program can reduce average placement time while leaving the most complex requests waiting longer. It can increase utilization by keeping nearly every room occupied while eliminating the flexibility needed for urgent arrivals. It can report many placements without confirming check-in. It can lower cost per night by selecting options that create transportation barriers or failed stays.
+
+Measurement becomes useful when it connects activity to purpose.
+
+The purpose of coordinated veteran care is not to move records through a portal. It is to respond to urgent needs, make suitable placements, preserve dignity and choice, support stable transitions, use public and partner resources responsibly, and learn where the network fails.
+
+All records and metrics discussed in this chapter are simulated. They demonstrate a measurement approach rather than actual program performance.
+
+## Begin With The Decision
+
+Every measure should support a decision.
+
+Before building a dashboard, the team should ask who will use the measure, what action they can take, how often they need it, and what harm could result from misinterpretation.
+
+A coordinator needs a current queue: which request is approaching its deadline, which hold is expiring, which provider has not responded, and which veteran has not acknowledged instructions. A provider manager needs inventory freshness, response time, declines, utilization, and unresolved invoices. A program leader needs trends in demand, access, placement success, stability, equity, cost, and partner reliability.
+
+The same metric can mislead when used for the wrong decision. Monthly average placement time is useful for trend review. It is not sufficient for deciding which person needs help now.
+
+```mermaid
+flowchart TD
+    A["Mission: timely, suitable, stable support"] --> B["Decision to improve"]
+    B --> C["Define population and event grain"]
+    C --> D["Specify numerator, denominator, and window"]
+    D --> E["Validate sources and exclusions"]
+    E --> F["Segment for risk and equity"]
+    F --> G["Set target and balancing measures"]
+    G --> H["Assign an owner and response action"]
+    H --> I["Review, learn, and revise"]
+```
+
+The measure is complete only when a result can lead to responsible action.
+
+## Define The Grain First
+
+Grain describes what one row represents.
+
+BeaResponseCare contains person, household, request, assessment, consent, provider, unit, case, placement, partner-work, event, and monthly-region report records. Each supports different questions.
+
+One veteran may have several requests. One request may produce several match attempts. One placement may contain several holds, provider responses, stay events, communications, and invoices. Counting rows across these datasets without declaring grain can inflate results.
+
+Examples of explicit grain include:
+
+- one row per veteran;
+- one row per request;
+- one row per placement attempt;
+- one row per completed placement;
+- one row per unit per calendar day;
+- one row per partner work item;
+- one row per disclosure event; and
+- one row per month, region, municipality, and shift.
+
+The hosted reporting feed uses monthly and geographic dimensions together with shift. A row such as `REP-12069` represents a simulated operational snapshot for one month, region, municipality, and shift. It should not be added to another row unless the dimensions and overlap are understood.
+
+## Numerators Need Denominators
+
+A count answers "how many." A rate answers "out of how many eligible opportunities."
+
+Reporting thirty-six placements is incomplete without knowing whether there were forty requests or one hundred. The placement rate might be defined as:
+
+`requests resulting in a verified placement / eligible requests reaching a placement decision`
+
+That denominator excludes duplicate or withdrawn requests only if the program defines and reports those exclusions. Using every intake as the denominator may understate performance when many requests are out of scope. Excluding difficult cases after the fact may overstate it.
+
+Every rate should document:
+
+- numerator event;
+- denominator population;
+- unit of analysis;
+- eligibility and exclusion rules;
+- time window;
+- treatment of open records;
+- source tables and fields; and
+- refresh schedule.
+
+Counts and rates belong together. A 100 percent placement rate based on two requests should not carry the same confidence as a rate based on two hundred.
+
+## Time Windows Change The Story
+
+The command center calculates operational measures over a rolling fourteen-day period. The reporting feed contains monthly snapshots. These views answer different questions.
+
+A rolling window responds quickly to change but can fluctuate as events enter and leave the period. A calendar month aligns with contracts and finance but may lag operational problems. A cohort follows requests that began in the same period to their eventual outcomes. A point-in-time measure describes current state.
+
+The team should label each view clearly:
+
+- **Event-period:** events that occurred during the window.
+- **Start cohort:** records created during the window, followed forward.
+- **Completion cohort:** records completed during the window, regardless of start.
+- **Point in time:** state at a defined timestamp.
+- **Rolling window:** continuously updated period ending now.
+
+Average placement time calculated from requests completed in the last fourteen days may exclude unresolved requests that have already waited longer. A cohort view or aging distribution reveals that risk.
+
+## A Measurement Framework For The Journey
+
+A balanced framework follows the veteran journey from access to longer-term stability.
+
+### Access And Demand
+
+These measures describe who is asking for help and whether the network is reachable:
+
+- unique veterans and households requesting assistance;
+- new and repeat requests;
+- request type, location, and referral source;
+- requests by urgency and required accommodation;
+- intake completion and abandonment;
+- channel and assisted-intake use;
+- duplicate requests identified; and
+- requests outside program scope with referral outcome.
+
+Demand should not be inferred only from completed forms. Abandoned intake and unsuccessful contact can reveal access barriers.
+
+### Responsiveness
+
+These measures describe how quickly accountable action begins:
+
+- time from request to acknowledgment;
+- time to first successful contact;
+- time to triage and owner assignment;
+- percentage meeting service-level targets;
+- time to eligibility decision;
+- time to provider shortlist;
+- time to funding decision; and
+- age of open requests and cases.
+
+Median and percentile measures are usually more informative than average alone. A small number of extreme delays can distort the mean, while an average can hide a long tail.
+
+### Matching And Placement
+
+These measures describe whether demand becomes a suitable, verified placement:
+
+- requests receiving at least one suitable match;
+- match attempts per placement;
+- provider response and acceptance rate;
+- structured decline reasons;
+- hold conversion and expiration rate;
+- time from match to reservation;
+- reservation-to-check-in confirmation rate;
+- unsuccessful matches; and
+- requests unresolved at the end of the window.
+
+A placement should require verified arrival or another defined evidence standard. "Assigned" and "checked in" should not be counted as the same outcome.
+
+### Stay Quality And Stability
+
+These measures describe what happened after placement:
+
+- confirmed check-ins;
+- missed arrivals and reasons;
+- early checkouts;
+- urgent relocations;
+- extensions requested, approved, and declined;
+- stay completed as planned;
+- transition plan completed before checkout;
+- destination at exit; and
+- return to crisis or new emergency request within a defined interval.
+
+Longer stays are not inherently better. The measure should reflect the intended service and veteran's goals.
+
+### Partner Reliability
+
+These measures describe cross-organizational performance:
+
+- inventory freshness;
+- provider response time;
+- acceptance, decline, and no-response rates;
+- notification delivery and acknowledgment;
+- overdue SLA tasks;
+- unresolved exceptions and age;
+- extension decisions before checkout; and
+- handoffs reopened after apparent closure.
+
+Partner measures need context. A provider serving high-complexity placements may have a different decline pattern from one serving a narrower population.
+
+### Resource Stewardship
+
+These measures connect service to capacity and finance:
+
+- physical, operational, available, and suitable capacity;
+- utilization by provider, unit type, and accessibility feature;
+- approved and actual nights;
+- approved, invoiced, and paid amounts;
+- invoice variance;
+- cost per verified placement;
+- cost per completed stay;
+- transportation and ancillary cost; and
+- avoidable cost associated with no-shows, expired holds, or failed matches.
+
+Cost should not be optimized without quality and equity guardrails.
+
+## Build A Metric Dictionary
+
+A metric name is not a definition.
+
+"Average placement time" may mean request creation to assignment, request creation to reservation, or request creation to verified check-in. The portal's rolling KPI currently uses creation to assignment or latest placement-related update for records in placed statuses. Its label should state that operational definition and should not be interpreted as verified arrival time.
+
+A metric dictionary should include:
+
+| Element | Description |
+| --- | --- |
+| Name | Human-readable and stable metric name |
+| Purpose | Decision the metric supports |
+| Grain | Unit represented by each observation |
+| Numerator | Count or value being measured |
+| Denominator | Eligible population or opportunities |
+| Start and end events | Exact timestamps used for durations |
+| Window | Rolling, calendar, cohort, or point-in-time period |
+| Exclusions | Documented rules and reasons |
+| Segments | Approved dimensions for interpretation |
+| Sources | Tables, fields, and transformation version |
+| Owner | Role accountable for definition and quality |
+| Target | Expected range and effective date |
+| Balancing measures | Signals that detect unintended harm |
+
+Definitions should be versioned. If placement success changes from assignment to verified check-in, historical reports should identify which definition produced each value.
+
+## Distributions Reveal What Averages Hide
+
+Suppose one simulated report row shows an average routing time of 3.5 hours and another shows 9.3 hours. The difference may reflect geography, shift, urgency, capacity, request mix, or random variation. The averages alone do not explain it.
+
+For time measures, report:
+
+- count of eligible observations;
+- median;
+- 75th, 90th, and possibly 95th percentile;
+- minimum and maximum with data-quality checks;
+- percentage meeting the target; and
+- aging bands for still-open work.
+
+An aging table might show requests open less than two hours, two to six hours, six to twenty-four hours, one to three days, and more than three days. This keeps unresolved work visible.
+
+Control charts or run charts can distinguish normal variation from a meaningful shift. Comparing two isolated averages can lead to overreaction.
+
+## Equity Is A Required View
+
+An overall improvement can coexist with widening differences between groups.
+
+The program should examine access, timeliness, placement success, suitability, exceptions, and stability across relevant dimensions such as county, municipality, rurality, age group, disability or accommodation need, household composition, language or communication need, referral source, and program eligibility.
+
+Protected and sensitive attributes require governance, minimum-necessary access, and careful interpretation. Small cells may need suppression or aggregation to protect privacy. Segments should be chosen because they support an equity question, not because every available field can be charted.
+
+Differences do not establish cause. A lower placement rate for veterans needing accessible rooms may reflect limited inventory, stale accessibility data, transportation gaps, or process bias. The measurement identifies a pattern; qualitative review and operational evidence help explain it.
+
+Veteran feedback is essential. Quantitative measures cannot fully describe whether choices felt meaningful, instructions were understandable, or the process preserved dignity.
+
+## Pair Outcomes With Balancing Measures
+
+Improving one metric can create harm elsewhere.
+
+```mermaid
+flowchart LR
+    A["Goal: reduce time to placement"] --> B["Primary measure:<br/>median request-to-confirmation time"]
+    A --> C["Quality guardrail:<br/>verified suitable check-in"]
+    A --> D["Equity guardrail:<br/>time by accommodation need and geography"]
+    A --> E["Capacity guardrail:<br/>expired holds and urgent relocations"]
+    A --> F["Experience guardrail:<br/>clarity, choice, and repeated questions"]
+    A --> G["Finance guardrail:<br/>rate exceptions and avoidable cost"]
+```
+
+Examples include:
+
+- Faster placement paired with suitability, relocation, and veteran-choice measures.
+- Higher utilization paired with urgent-access capacity and hold-conflict measures.
+- Lower cost paired with travel burden, transportation failure, and stay-completion measures.
+- Fewer overrides paired with unresolved priority conflicts and assessor feedback.
+- More automated notifications paired with delivery, acknowledgment, and comprehension measures.
+
+Targets should never stand alone from the behavior they may incentivize.
+
+## Data Quality Is Part Of Every Result
+
+A dashboard should report the health of the data used to create it.
+
+Key dimensions include:
+
+- **Completeness:** are required fields present?
+- **Validity:** do values follow definitions and ranges?
+- **Uniqueness:** are duplicate people, requests, or events inflating counts?
+- **Consistency:** do related records agree where they should?
+- **Timeliness:** are inventory and status updates fresh enough?
+- **Referential integrity:** do linked IDs resolve?
+- **Provenance:** can values be traced to source and actor?
+- **Synchronization:** are local updates absent from shared reporting?
+
+Jordan's active-stay case and open reservation-decline exception are a consistency issue until reconciled. Counting the case as a successful active stay while ignoring the exception could overstate outcomes.
+
+Every reported metric can carry a quality indicator, such as percent of eligible records included, unresolved conflicts, missing timestamps, or last refresh time.
+
+## Avoid Double Counting Connected Records
+
+Connected data makes rich analysis possible and careless joins dangerous.
+
+Joining one request to several provider attempts creates several rows. Summing requests after that join counts the same request repeatedly. Joining placements to communication events can multiply amounts or nights.
+
+Safe analysis starts by declaring the target grain, aggregating child events to that grain, and validating row counts before and after joins.
+
+For example:
+
+1. Build one request-level table with first acknowledgment, first match, final decision, and verified outcome.
+2. Aggregate provider attempts per request into count and final-reason fields.
+3. Aggregate communications into delivery and acknowledgment indicators.
+4. Join those summaries one-to-one to the request table.
+5. Confirm that request count did not increase.
+
+Stable identifiers make this possible, but identifiers do not prevent a many-to-many join error.
+
+## Distinguish Current State From Event History
+
+Current tables answer what is true now. Events answer how the state changed.
+
+Both are needed. A current case status supports the queue. Event history supports duration, sequence, rework, and accountability measures.
+
+The measurement pipeline should preserve event occurrence time and record time. Late-arriving events can change historical results. Reports should define whether prior periods are restated and display the latest refresh.
+
+```mermaid
+flowchart TD
+    A["Operational events"] --> B["Validated event history"]
+    B --> C["Current-state projections"]
+    B --> D["Request and placement cohorts"]
+    B --> E["Duration and sequence measures"]
+    C --> F["Live queues and point-in-time counts"]
+    D --> G["Outcome and equity analysis"]
+    E --> H["SLA, handoff, and rework analysis"]
+    F --> I["Governed reporting layer"]
+    G --> I
+    H --> I
+    I --> J["Dashboards, reviews, and exports"]
+```
+
+Local browser activity can support the user's immediate view, but authoritative organizational reporting should use synchronized, governed events from trusted infrastructure.
+
+## Cost Requires A Clear Unit
+
+The reporting feed includes cost as a formatted value. Analysis should store cost as a numeric amount with currency and derive display formatting later.
+
+Cost measures need a unit and boundary:
+
+- cost per authorized night;
+- cost per actual night;
+- cost per verified placement;
+- cost per completed stay;
+- lodging-only cost;
+- lodging plus transportation and meals; or
+- total program operating cost.
+
+Comparing providers on nightly rate alone can be misleading when services differ. Comparing regions without adjusting for household needs, stay length, availability, and transport can also mislead.
+
+Finance reconciliation provides the strongest basis for actual cost because it connects approval, stay events, invoice, variance, and payment.
+
+## Experience Is An Outcome Signal
+
+Operational data cannot fully answer whether the service felt coordinated.
+
+Short, timely feedback can ask whether the veteran:
+
+- understood the next step;
+- knew who to contact;
+- had to repeat information unnecessarily;
+- received instructions in an accessible form;
+- felt involved in the placement decision;
+- found the accommodation usable and safe; and
+- understood the transition plan.
+
+Feedback should be optional, accessible, and separated from immediate service eligibility. Low response rates and channel bias should be reported.
+
+Narrative feedback can reveal failure modes that coded records miss. Themes should be reviewed with privacy controls and connected to improvement work without exposing unnecessary identity.
+
+## From Dashboard To Learning Cycle
+
+A dashboard is useful when it supports a recurring operating rhythm.
+
+Daily reviews focus on urgent queues, deadlines, holds, exceptions, and stale inventory. Weekly reviews examine service levels, aging, declines, conflicts, and partner bottlenecks. Monthly reviews examine cohorts, outcomes, equity, experience, utilization, and finance. Quarterly reviews reconsider definitions, targets, capacity strategy, and improvement priorities.
+
+Each review should produce:
+
+- a finding supported by evidence;
+- an identified owner;
+- a proposed action;
+- a due date;
+- an expected effect and balancing measure; and
+- a follow-up decision.
+
+The team should distinguish signals requiring immediate intervention from hypotheses requiring investigation. Measurement supports judgment; it does not replace it.
+
+## A Measurement Review Checklist
+
+Before publishing a metric, the team should be able to answer:
+
+1. What decision does this measure support?
+2. What does one observation represent?
+3. What are the numerator, denominator, and exclusions?
+4. Is the time view event-period, cohort, point-in-time, or rolling?
+5. Are open and late-arriving records handled explicitly?
+6. Does the duration use the correct start and end events?
+7. Could joins duplicate people, requests, placements, nights, or cost?
+8. What data-quality indicator accompanies the result?
+9. Which segments reveal differences in access, timeliness, or outcome?
+10. What balancing measures guard against unintended harm?
+11. Is sensitive or small-cell information protected?
+12. Who owns the metric definition, target, and response action?
+
+## Chapter Takeaways
+
+- Measurement begins with a mission and a decision, not an available field.
+- Grain determines what can be counted and joined safely.
+- Rates require explicit denominators, exclusions, and observation counts.
+- Rolling, monthly, cohort, completion, and point-in-time views answer different questions.
+- A balanced framework covers access, responsiveness, placement, stability, partners, resources, equity, and experience.
+- Metric definitions need versioned start events, end events, sources, and owners.
+- Distributions and aging reveal delays hidden by averages.
+- Equity views require privacy protection, context, and qualitative investigation.
+- Balancing measures protect against improving speed or cost at the expense of suitability and dignity.
+- Data quality and synchronization should accompany every result.
+- Current state supports operations; event history supports sequence, duration, and learning.
+- Dashboards create value when they drive an owned improvement cycle.
+
+## Reflection Questions
+
+1. Which current metrics count activity rather than a verified service outcome?
+2. Can every reported rate identify its denominator and exclusions?
+3. Do your time measures exclude unresolved cases that have waited the longest?
+4. Which many-to-many joins could inflate requests, placements, nights, or cost?
+5. What differences appear when outcomes are segmented by geography and accommodation need?
+6. Which balancing measure would reveal harm from optimizing your primary target?
+7. Does every dashboard show data freshness and quality limitations?
+8. How is veteran experience incorporated without affecting eligibility or service access?
+9. What action, owner, and follow-up decision result from each recurring review?
+
+## Next: From Prototype To Production
+
+Chapter 11 examines what must change before a static, browser-based demonstration becomes a production care-coordination platform: identity, authorization, secure APIs, authoritative data, synchronization, privacy engineering, observability, accessibility, testing, deployment, and operational support.
+
 
 
 
