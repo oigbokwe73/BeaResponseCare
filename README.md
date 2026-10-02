@@ -1944,6 +1944,408 @@ Before presenting a provider as placement-ready, the coordinator should be able 
 
 Chapter 7 follows a suitable match through triage, hold, approval, reservation, stay monitoring, finance, and communication. It shows how six connected operational steps turn provider capacity into an accountable placement without losing the veteran, request, consent, or decision history along the way.
 
+# Chapter 7: The Six-Step Placement Journey
+
+> A match is a possibility. A placement is a chain of owned decisions that remains visible from triage through arrival, payment, and communication.
+
+Jordan Edwards appears to have reached an active placement.
+
+Case `CASE-11259` associates Jordan's request with Compass Residences at Vineland 533, provider `PROV-09532`. Rosa Delgado manages the case. The phase is active stay monitoring, and the next action is a wellness and occupancy check-in. The connected placement is `PLC-11259`.
+
+Yet partner work item `P1-70489` is still open because a reservation was declined. Monica Price owns the exception, its priority is high, and the next action is to document a resolution.
+
+These two records do not tell a clean success story. They tell a more useful one.
+
+Perhaps a declined reservation was replaced and the exception record was not closed. Perhaps the active case moved forward incorrectly. Perhaps the case describes a current stay while the exception relates to an earlier reservation attempt. The system should not guess. It should connect the records, show the different sources and times, and require an accountable person to reconcile them.
+
+This is why placement cannot be represented by a single status.
+
+BeaResponseCare divides placement operations into six steps:
+
+1. Triage and service-level agreement.
+2. Match and hold.
+3. Approval and reservation.
+4. Stay and exceptions.
+5. Finance reconciliation.
+6. Communications.
+
+Each step creates evidence needed by the next. Each step can fail, expire, or return the workflow to an earlier decision. Together they turn a request and an available unit into an accountable service outcome.
+
+All people, providers, identifiers, and situations in this chapter are simulated.
+
+## One Placement, Several State Machines
+
+A placement has more than one kind of state.
+
+The request may be in matching. The hold may be active. Funding may be pending. The provider may have accepted. The veteran may not yet have acknowledged the instructions. The reservation may be confirmed. Check-in may still be unverified. An invoice may not exist. A communication may have failed.
+
+Compressing those facts into "active" hides the work that remains.
+
+A better model keeps the states distinct while presenting them in one journey. The coordinator sees the overall phase, but can also inspect the evidence behind it.
+
+```mermaid
+flowchart LR
+    A["1. Triage and SLA"] --> B["2. Match and hold"]
+    B --> C["3. Approval and reservation"]
+    C --> D["4. Stay and exceptions"]
+    D --> E["5. Finance reconciliation"]
+    E --> F["6. Communications and closure"]
+
+    B -. "no suitable inventory" .-> A
+    C -. "decline or hold expiry" .-> B
+    D -. "relocation or extension" .-> B
+    E -. "variance or missing evidence" .-> D
+    F -. "failed delivery or correction" .-> C
+```
+
+Communication is shown last because it is the sixth operational tab, but communication occurs throughout the journey. Every material state change may create a message, acknowledgment, or escalation.
+
+## Step 1: Triage And SLA
+
+The placement journey begins by converting urgency into owned work.
+
+BeaResponseCare records recommended priority, any authorized override, accountable owner, escalation deadline, and the reasons behind the decision. Those fields establish who must act and by when.
+
+The triage step should reconcile the request priority with assessment and case context. For Jordan, the request's high priority and the assessment's low final priority require explanation. The placement workflow should not silently copy one value into the final queue.
+
+A complete triage decision includes:
+
+- placement, request, case, veteran, and household identifiers;
+- recommendation and source;
+- final operational priority;
+- reasons and material risk factors;
+- override authority and reason where applicable;
+- assigned owner and backup;
+- service-level deadline;
+- current consent and eligibility dependencies; and
+- next review or escalation trigger.
+
+The service-level agreement is not only a timer. It defines the response expected at that stage. A critical request may require acknowledgment within minutes and a documented action plan within an hour. A lower-priority request may allow more time, but it still needs a visible commitment.
+
+If ownership changes, the handoff should require acceptance. Reassigning a name in a dropdown does not prove the new owner knows about the placement.
+
+## Step 2: Match And Hold
+
+Matching begins with the constraints established during intake and assessment. Dates, household size, accessibility, location, transportation, program participation, rate, and inventory freshness shape the candidate list.
+
+BeaResponseCare produces an explainable provider shortlist and records the chosen provider, units held, hold expiration, match score, and reasons. The score helps comparison; the reasons make the choice reviewable.
+
+For Jordan, Compass may rank well because it is in Vineland, reports available inventory, offers shuttle support, and participates at a known rate. The selection still needs unit-level confirmation. Aggregate accessibility does not guarantee that the open room meets the ground-floor requirement.
+
+The match record should distinguish:
+
+- hard constraints that every candidate must satisfy;
+- preferences used to rank viable candidates;
+- facts confirmed from shared records;
+- facts that are stale or require provider confirmation;
+- excluded candidates and exclusion reasons; and
+- the authorized coordinator's final selection.
+
+A hold protects the selected capacity while approval proceeds. It needs a unique ID, unit or pooled quantity, placement link, creator, provider acknowledgment, start time, expiration, and release or conversion event.
+
+The hold is a promise with a clock. It is not a reservation.
+
+## Step 3: Approval And Reservation
+
+Approval and reservation combine several decisions that must remain distinguishable.
+
+The funding authority decides whether the program will pay, for how many nights, and at what rate. The provider decides whether it will accept the referral and supply the space. The veteran decides whether to proceed after receiving usable instructions. A reservation number records the provider's operational commitment.
+
+BeaResponseCare captures funding approval, authorized nights, authorized rate, provider response, reservation number, veteran acknowledgment, and check-in instructions.
+
+A safe progression requires all relevant conditions:
+
+- consent permits the minimum-necessary referral;
+- the provider confirms the correct location and unit or inventory allocation;
+- the hold remains active or is converted without a gap;
+- funding is approved for the dates, rate, and services;
+- the reservation identifier is received and verified;
+- check-in instructions are accessible and complete; and
+- the veteran acknowledges or the coordinator records an approved alternative contact plan.
+
+Funding approval does not equal provider acceptance. Provider acceptance does not equal veteran acknowledgment. A reservation number does not prove arrival.
+
+If the provider declines, the workflow should record a structured reason, release the hold, preserve the attempt, notify the owner, and return to matching. It should not overwrite the provider field as though the attempt never happened.
+
+## Step 4: Stay And Exceptions
+
+The fourth step verifies what happens after reservation.
+
+Supported events include check-in, checkout, missed check-in, early checkout, urgent relocation, extension request, no inventory, and reservation decline. Each event has a time, source, note, and effect on the next action.
+
+Jordan's case says active stay monitoring, while the connected exception says reservation declined. That difference should open a reconciliation task.
+
+The reviewer needs to determine:
+
+- whether the decline applied to the current reservation or an earlier attempt;
+- whether another provider or reservation replaced it;
+- whether Jordan actually checked in;
+- which event occurred first;
+- whether all affected parties received updates; and
+- which record now owns the next action.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Planned
+    Planned --> Confirmed: approval and reservation complete
+    Confirmed --> CheckedIn: arrival verified
+    Confirmed --> Exception: decline, no inventory, or missed arrival
+    CheckedIn --> ExtensionReview: more nights requested
+    ExtensionReview --> CheckedIn: extension approved
+    ExtensionReview --> Transition: extension declined
+    CheckedIn --> Relocation: urgent move required
+    Relocation --> Planned: rematch
+    Exception --> Planned: rematch
+    CheckedIn --> CheckedOut: departure verified
+    Transition --> CheckedOut: transition completed
+    CheckedOut --> Closed: outcome and finance complete
+```
+
+An exception is not merely a negative status. It is work with an owner, priority, deadline, reason, and resolution path.
+
+Stay monitoring should be proportionate and respectful. Wellness checks, occupancy confirmation, extension planning, and checkout coordination must follow program policy and avoid unnecessary intrusion. The goal is continuity and safety, not surveillance.
+
+## Step 5: Finance Reconciliation
+
+Finance begins before the invoice arrives.
+
+The approved nights and rate established during Step 3 create the expected amount. Stay events determine actual nights and authorized changes. The provider's invoice must be compared with both.
+
+BeaResponseCare records voucher ID, invoice ID, payment status, approved amount, invoiced amount, actual nights, and calculated variance.
+
+A reconciliation should compare:
+
+- approved provider and location;
+- authorized dates, nights, rate, taxes, fees, and services;
+- reservation and placement identifiers;
+- verified check-in and checkout events;
+- approved extensions or early checkout;
+- invoiced dates, quantity, and amount; and
+- prior payments, credits, or adjustments.
+
+A variance is not automatically an error. An approved extension can raise the final amount. An early checkout can reduce it. A no-show policy may permit a charge. What matters is whether the difference has supporting evidence and authorized review.
+
+Payment status should distinguish pending invoice, under review, approved, paid, and exception. A placement should not appear financially closed merely because the veteran checked out.
+
+Finance data should support service accountability without exposing unnecessary assessment or health information. The payment reviewer usually needs placement, authorization, stay, and invoice evidence, not the full Veteran 360 record.
+
+## Step 6: Communications
+
+Communication turns internal state into coordinated action.
+
+BeaResponseCare records audience, channel, delivery status, and event-based message. Supported audiences include veteran, case manager, provider, and funder. Channels include email, SMS, phone, and secure message. Delivery states distinguish prepared, sent, delivered, and failed.
+
+Those distinctions matter. A message marked sent may not have reached the recipient. A phone attempt may require another channel. A veteran may prefer a call while a provider requires secure messaging.
+
+Important communication events include:
+
+- request acknowledgment;
+- owner assignment and response expectation;
+- consent explanation;
+- hold creation and expiration warning;
+- funding decision;
+- provider acceptance or decline;
+- reservation and accessible check-in instructions;
+- appointment transportation details;
+- check-in confirmation request;
+- exception, relocation, or extension update;
+- checkout and transition plan; and
+- finance questions directed to the provider.
+
+Messages should use minimum-necessary information and accessible language. A delivery log should record recipient, channel, purpose, time, status, and related placement event. Sensitive details should not be placed in an insecure channel merely because it is convenient.
+
+Communication history is evidence of coordination, but it should not become a mass of copied notes. Structured event types and outcomes make the timeline usable.
+
+## Every Step Produces A JSON Event
+
+The placement page serializes each form before local persistence or remote submission. The payload connects the active profile, workflow type, placement, and form values. The resulting event updates the placement view while preserving activity history.
+
+A durable event envelope should contain:
+
+- event ID and type;
+- placement, request, case, veteran, provider, and unit references as applicable;
+- actor and organization;
+- event time and recorded time;
+- prior and resulting state;
+- decision fields and reasons;
+- source version;
+- local, synchronization, and remote-response status; and
+- correlation ID for retry and tracing.
+
+The event should not copy every connected record. Stable references allow authorized users to retrieve current context while the event preserves the facts necessary to understand the decision at that time.
+
+```mermaid
+sequenceDiagram
+    participant U as Coordinator
+    participant W as Placement workflow
+    participant L as Local profile and IndexedDB
+    participant S as Shared endpoint
+    participant T as Unified timeline
+
+    U->>W: Review and submit a step
+    W->>W: Validate and serialize JSON event
+    W->>L: Save event and placement update
+    L-->>W: Confirm durable local save
+    W->>S: Submit with correlation and version
+    alt accepted
+        S-->>W: Return shared result and reference
+        W->>T: Append synchronized event
+    else rejected or conflict
+        S-->>W: Return failure or current version
+        W->>T: Append unresolved submission event
+        W-->>U: Preserve local work and show next action
+    end
+```
+
+The response should be captured as evidence, but raw request and response payloads do not need to dominate the placement screen. Users need the resulting state, reference, time, and any action required. Detailed technical records can remain in an authorized audit view.
+
+## The Timeline Is The Coordination Spine
+
+A unified timeline connects assignments, holds, approvals, provider decisions, reservations, stay events, submissions, communications, and finance.
+
+To be useful, every timeline entry should answer:
+
+- what happened;
+- when it happened and when it was recorded;
+- who or what caused it;
+- which placement and related records it affects;
+- what changed;
+- whether it succeeded, failed, or remains pending; and
+- what must happen next.
+
+Chronology alone is not enough. The timeline should distinguish an event's occurrence time from the time it reached the system. A provider may report a decline after a coordinator already acted on stale acceptance. Both times are needed to understand the sequence.
+
+Filters can help users focus on decisions, communications, exceptions, stay events, finance, or synchronization failures. The complete history should remain available to authorized reviewers.
+
+## Return Paths Are Part Of The Design
+
+Many workflows are drawn as straight lines because straight lines are easier to explain. Real placements contain loops.
+
+A hold expires before approval. A provider asks for more information. Funding authorizes fewer nights. The veteran cannot use the offered transportation. A reservation is declined. A check-in is missed. An extension collides with another reservation. An invoice includes an unapproved fee.
+
+Each condition should return the work to a defined step with the relevant context intact.
+
+For example, a reservation decline should:
+
+1. record the provider response and reason;
+2. mark the reservation attempt unsuccessful;
+3. release the affected hold;
+4. preserve the provider and matching evidence;
+5. create or update an exception with owner and deadline;
+6. notify the veteran and responsible staff appropriately;
+7. return the placement to matching; and
+8. keep funding and consent context available for the next attempt.
+
+The loop is not a failure of workflow design. An invisible or ownerless loop is.
+
+## Roles And Separation Of Duties
+
+The six steps may involve intake staff, case managers, supervisors, provider contacts, funding reviewers, finance staff, and partner coordinators. Role boundaries protect both people and programs.
+
+The person recommending a match may not be authorized to approve an above-threshold rate. A provider contact should not edit the veteran's assessment. Finance staff should not change check-in evidence to resolve an invoice variance. A coordinator may record verbal acknowledgment but should not fabricate delivery confirmation.
+
+Role-based access should apply at field and action level. High-risk decisions need clear authority. Emergency paths should be available when policy permits, with stronger review rather than invisible shortcuts.
+
+The demonstration portal uses profile roles and local storage, but it is not a production identity or authorization system. A production implementation requires verified identities, organization membership, session controls, policy enforcement, and server-side audit protection.
+
+## Honest Synchronization States
+
+BeaResponseCare can save an operation locally and optionally submit it remotely. That pattern keeps the user moving during intermittent connectivity, but only if the interface reports state honestly.
+
+Useful states include:
+
+- draft;
+- saved locally;
+- queued for submission;
+- submitted;
+- accepted and synchronized;
+- rejected;
+- version conflict;
+- retry required; and
+- superseded.
+
+A locally saved provider acceptance should not appear as a shared reservation to another coordinator until synchronization succeeds. Likewise, a timeout should not automatically create a second placement attempt. Idempotency keys and correlation IDs allow safe retries.
+
+Version checks prevent one user from overwriting a newer hold, approval, or stay event. Conflicts should show both states and route high-risk differences for review.
+
+## Placement Completion Is A Verified Outcome
+
+A placement should not close merely because every tab contains data.
+
+Closure should verify that the stay outcome is known, open exceptions are resolved or transferred, required communications occurred, finance is complete or assigned, and the next housing or care transition is documented.
+
+Possible outcomes should be defined clearly: completed stay, transitioned to stable housing, transferred, veteran declined, unable to contact, provider cancellation, or another approved category. "Closed" describes workflow state, not human outcome.
+
+For Jordan, closure requires reconciling the active-stay case with the open declined-reservation exception. If Jordan is currently housed, the record should identify the valid reservation and close or relate the earlier exception. If Jordan never checked in, the case should not remain in active stay monitoring.
+
+## Placement Measures That Reveal Coordination
+
+Useful measures follow the journey rather than counting only final placements:
+
+- time from request to triage and owner assignment;
+- service-level breaches and escalation response;
+- candidates reviewed per successful match;
+- hold creation, expiration, and conversion rates;
+- time from match to funding decision;
+- provider response time and decline reasons;
+- reservation-to-check-in confirmation rate;
+- missed arrivals, relocations, and extension outcomes;
+- unresolved exceptions and age;
+- approved-to-invoiced variance;
+- communication delivery and acknowledgment rates;
+- local operations awaiting synchronization; and
+- time from checkout to operational and financial closure.
+
+Measures should be segmented carefully by request type, urgency, geography, accessibility, household requirements, and provider. Differences can identify process barriers, but they require investigation before assigning cause.
+
+## A Six-Step Review Checklist
+
+Before declaring a placement complete, the team should be able to answer:
+
+1. Is triage supported by reasons, an owner, and a deadline?
+2. Are conflicting priorities reconciled or clearly distinguished?
+3. Did the match satisfy hard constraints using sufficiently fresh data?
+4. Was the hold acknowledged, unexpired, and converted or released?
+5. Are funding approval, provider acceptance, reservation, and veteran acknowledgment distinct and complete?
+6. Are accessible check-in and transportation instructions confirmed?
+7. Is actual check-in or another stay outcome verified?
+8. Are exceptions owned, timed, resolved, and linked to the correct attempt?
+9. Do approved nights and rates reconcile with stay events and the invoice?
+10. Were material communications delivered or followed up through another channel?
+11. Are all local and remote operation states honest and traceable?
+12. Does closure describe the service outcome and next transition, not only a system status?
+
+## Chapter Takeaways
+
+- Placement is a chain of related decisions, not one status field.
+- Triage turns urgency into accountable ownership and a response clock.
+- Matching identifies suitable candidates; an acknowledged hold protects the decision window.
+- Funding approval, provider acceptance, reservation, and veteran acknowledgment are separate states.
+- Stay events verify the lived outcome and trigger exceptions, extensions, or transitions.
+- Finance reconciliation connects authorization, actual stay evidence, and invoicing.
+- Communication occurs throughout the journey and needs delivery evidence.
+- Each step should serialize a focused, versioned JSON event with stable references.
+- The unified timeline is the coordination spine for decisions, failures, and next actions.
+- Return paths preserve context and accountability when the expected path breaks.
+- Local persistence must not be confused with shared acceptance.
+- Closure requires a verified outcome and reconciliation of open exceptions.
+
+## Reflection Questions
+
+1. Which distinct placement states are currently compressed into labels such as pending or active?
+2. Can every placement identify an owner, backup, deadline, and next action?
+3. What prevents an expired hold from being treated as reserved inventory?
+4. Can staff distinguish funding approval from provider acceptance and veteran acknowledgment?
+5. How does a reservation decline return the case to matching without erasing history?
+6. Which stay events trigger automatic tasks, communications, or finance changes?
+7. Can a failed remote submission be retried without duplicating the operation?
+8. What evidence is required before a placement is considered complete?
+9. Do open exceptions ever remain after a case moves to active or closed status?
+
+## Next: Closing Partner Handoffs
+
+Chapter 8 moves beyond the placement team's internal workflow to the boundaries between organizations. It examines provider responses, service-level tasks, acknowledgments, exceptions, escalation, accessible notifications, and transition plans so that every handoff ends with accepted ownership or a visible return path.
+
 
 
 
