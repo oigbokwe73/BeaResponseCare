@@ -911,5 +911,324 @@ Before releasing an intake workflow, a team should be able to answer yes to the 
 
 Chapter 4 follows the information beyond one request. It examines how a durable Veteran 360 record can connect identity, household, eligibility, programs, consent, service history, and accountable ownership without turning the person into a static profile or merging records without evidence.
 
+# Chapter 4: Building The Veteran 360 Record
+
+> A complete view of a person is not a record that contains everything. It is a view that connects what matters, preserves where it came from, and makes uncertainty visible.
+
+Jordan Edwards has completed an intake, but the intake is not Jordan.
+
+The request describes a specific need for temporary lodging near a medical facility in Vineland. It has dates, accessibility considerations, transportation needs, a priority, and a workflow status. Those facts matter now, but they will eventually become history. Jordan may make another request, enter another program, change households, move to another county, or work with a different provider.
+
+A durable coordinated-care record must recognize the same person across those changes without freezing the person in time.
+
+In BeaResponseCare, Jordan's Veteran 360 identifier is `VET-30259`. The profile connects to household `HH-18129`, request `REQ-26259`, and customer reference `CRN-470259`. It shows an HCHV program relationship, pending eligibility documentation, active consent, a Vineland location, a responsible provider, a need for reassessment, and no duplicate currently identified.
+
+These are simulated records. Their purpose is to demonstrate an operating model, not to describe a real veteran or provider.
+
+The Veteran 360 record answers a deceptively simple question: what must a care coordinator know to recognize continuity, find related work, and assign accountability without treating one system's snapshot as the whole person?
+
+## A View, Not A Warehouse
+
+The phrase "360-degree view" can invite a dangerous interpretation: copy every fact from every system into one large profile.
+
+That approach creates the appearance of completeness while weakening trust. Duplicated values become stale. Sensitive information spreads beyond its original purpose. Staff cannot tell which source owns a fact. Corrections must be repeated in several places. A profile may look authoritative even when its fields were updated at different times under different rules.
+
+A better Veteran 360 design is a connected view.
+
+It contains a small set of durable identity and coordination attributes, then links to records that retain their own purpose and lifecycle. The request remains the source for what is needed now. The assessment remains the source for vulnerability, scoring, and referral judgment. The consent record remains the source for permission and disclosure. The case remains the source for ownership and next action. The placement remains the source for reservation execution and stay events.
+
+```mermaid
+flowchart TD
+    V["Veteran 360<br/>VET-30259"]
+    H["Household<br/>HH-18129"]
+    R["Requests<br/>REQ-26259 and history"]
+    A["Assessments<br/>CEA-40489 and history"]
+    C["Consent<br/>CNS-50489 and history"]
+    P["Programs and eligibility"]
+    K["Cases and placements"]
+    O["Accountable organizations and providers"]
+
+    V --> H
+    V --> R
+    V --> A
+    V --> C
+    V --> P
+    V --> K
+    V --> O
+```
+
+The center is not a container for every detail. It is a dependable index into the care journey.
+
+## Begin With Durable Identity
+
+Identity is the foundation of coordination and one of its highest-risk areas.
+
+If two records belonging to Jordan are treated as different people, staff may repeat assessments, miss consent history, create competing placements, or report duplicate outcomes. If records belonging to two different people are merged, private information may be disclosed incorrectly and services may be assigned to the wrong person.
+
+Neither error is acceptable. Identity matching therefore requires evidence, review, and reversibility.
+
+The Veteran 360 identifier should be stable and system-generated. It should not be derived from a name, date of birth, Social Security number, or another attribute that may change or require special protection. Names and aliases support recognition, but they do not establish identity by themselves.
+
+Useful identity evidence may include:
+
+- a program-issued veteran identifier;
+- a customer reference used across the service journey;
+- verified contact information;
+- date of birth or another protected attribute used under controlled access;
+- referral-source confirmation;
+- known aliases or prior names; and
+- links to previously confirmed requests or cases.
+
+The profile should distinguish confirmed facts from candidate matches. A likely match can prompt a review without automatically combining records.
+
+## Duplicate Resolution Is A Workflow
+
+Duplicate detection is often implemented as a warning icon. Resolution requires more.
+
+A potential duplicate needs an accountable reviewer, the evidence supporting the match, the evidence against it, a deadline, and a recorded outcome. The reviewer should be able to decide that the records represent the same person, different people, or insufficient evidence.
+
+When records are confirmed as duplicates, the system should not simply delete one. It should preserve prior identifiers, relationships, provenance, and an audit event explaining the resolution. Any linked request, case, assessment, or consent must remain traceable.
+
+```mermaid
+flowchart TD
+    A["New or updated profile"] --> B["Search candidate matches"]
+    B --> C{"Potential duplicate?"}
+    C -- "No" --> D["Record no duplicate found"]
+    C -- "Yes" --> E["Open identity review"]
+    E --> F["Compare authorized evidence"]
+    F --> G{"Reviewer decision"}
+    G -- "Same person" --> H["Link under survivor ID and preserve aliases"]
+    G -- "Different people" --> I["Keep separate and record reason"]
+    G -- "Uncertain" --> J["Restrict action and request evidence"]
+    H --> K["Reconcile connected records"]
+    I --> L["Close review"]
+    J --> E
+    K --> L
+```
+
+The phrase "survivor ID" refers to the identifier retained after an approved resolution. It does not mean the discarded record disappears. Historical references should resolve to the surviving profile so users can understand what happened.
+
+## Household Is A Relationship With Time
+
+Jordan's profile links to household `HH-18129` and currently lists a household size of one. That value is useful, but it should not become a permanent statement about Jordan.
+
+Households change. A spouse or dependent may accompany one placement but not another. A family may reunify. A caregiver may become part of the service plan. A veteran may be counted in one program household while having different legal or residential relationships elsewhere.
+
+A mature household model records membership as a relationship with effective dates, role, source, and status. It can answer:
+
+- Who is included in the current service household?
+- Who is expected to accompany this request?
+- Which household definition does a program use?
+- When did a membership begin or end?
+- Who supplied or verified the information?
+
+The request still needs its own guest and dependent details because the people included in a particular stay may differ from the standing household record. A coordinator should see the difference and confirm it rather than forcing one value to overwrite the other.
+
+This is an important principle: connected records may disagree because they answer different questions. Reconciliation begins by understanding meaning, not by choosing the newest timestamp automatically.
+
+## Eligibility Is Not A Permanent Label
+
+Jordan's Veteran 360 profile says eligibility documentation is pending. That status does not mean Jordan is ineligible. It means the current evidence is not complete for the decision being considered.
+
+Eligibility belongs to a program, policy, effective period, and evidence set. A person may be eligible for HCHV, pending verification for another program, and outside the criteria for a third. A generic field labeled "eligible" cannot safely represent those differences.
+
+The profile can summarize eligibility for quick orientation, but the underlying record should preserve:
+
+- the program or benefit considered;
+- the current status;
+- the rule or authority applied;
+- evidence received and evidence still needed;
+- who made the determination;
+- the effective and review dates; and
+- the reason for denial, expiration, or change when applicable.
+
+Staff should be able to proceed with authorized preliminary work when policy allows. A pending document should create a task and deadline, not silently strand the request.
+
+Eligibility language also affects dignity. "Pending documentation" accurately describes process state. "Unverified veteran" can sound as though the person, rather than a document, is in doubt.
+
+## Programs Need Enrollment History
+
+The profile lists HCHV as an active program. That summary helps the coordinator understand the current service context, but program participation should be modeled as a series of enrollments rather than a comma-separated label.
+
+Each enrollment needs a program, status, start date, end date, responsible organization, assigned staff, and exit reason where appropriate. This history supports continuity when responsibility changes and prevents a prior program from appearing active indefinitely.
+
+A Veteran 360 view should make current enrollments prominent while keeping prior participation available to authorized staff. Historical program information can explain why a familiar provider appears in the record or why an earlier assessment exists. It should not be used to make assumptions about current need.
+
+Programs may also use different identifiers and definitions. The Veteran 360 ID provides the cross-program anchor, while each enrollment preserves the program's own reference and rules.
+
+## Ownership Must Name A Person And An Organization
+
+Jordan's profile identifies a responsible provider. Jordan's active case identifies a case manager. These roles are related, but they are not interchangeable.
+
+Provider responsibility may describe the organization currently delivering or coordinating a service. Case ownership identifies the person accountable for the next case action. A supervisor, program office, placement coordinator, or partner liaison may own other decisions.
+
+The profile should answer:
+
+- Which organization is primarily responsible for continuity?
+- Which staff member owns the active case?
+- Who is the backup when that person is unavailable?
+- When was responsibility assigned?
+- Which open actions remain with another partner?
+- What happens when a provider or staff assignment ends?
+
+Ownership without effective dates becomes stale. Ownership without escalation creates a single point of failure. Ownership without a named next action is only a directory entry.
+
+When the Veteran 360 provider differs from the provider on an active placement, the system should show both relationships and their purposes. It should not silently replace one with the other. One may own long-term coordination while the other supplies temporary lodging.
+
+## Status Summaries Must Retain Their Sources
+
+The Veteran 360 page may show current housing, eligibility status, coordinated-entry status, consent status, and duplicate status in one table. This is useful for scanning a by-name list. It is also easy to misread as a set of equally current facts.
+
+Every summary should retain a source, effective time, and verification state. Ideally, the interface lets the user inspect those details without leaving the workflow.
+
+For Jordan, "Hotel Placement" may come from a recent case event. "Needs Reassessment" may come from coordinated entry. "Active" consent may come from a consent record with a specific purpose and expiration. Each value carries a different meaning and update cycle.
+
+```mermaid
+sequenceDiagram
+    participant S as Source workflow
+    participant V as Veteran 360 view
+    participant U as Authorized user
+    participant A as Audit history
+
+    S->>V: Publish value, source, effective time, and version
+    V-->>U: Show summary with freshness and status
+    U->>V: Open supporting record
+    V-->>U: Display provenance and permitted details
+    U->>S: Submit correction or new event
+    S->>A: Preserve prior value and reason
+    S->>V: Publish updated summary
+```
+
+This pattern prevents the profile from becoming an untraceable editing surface. Corrections return to the workflow that owns the value, while the profile presents the updated summary.
+
+## Consent Governs The View
+
+A unified view does not imply universal access.
+
+The profile may connect identity, household, eligibility, programs, requests, and providers, but each user should see only what their role, organization, purpose, and current authorization permit. The system must evaluate access at the point of use, not merely when the data was first collected.
+
+Consent is one part of that decision. Legal authority, program policy, minimum-necessary practice, emergency exceptions, and organizational agreements may also apply. An active consent indicator is helpful for orientation, but the supporting record must identify permitted recipients, information categories, purpose, dates, signature evidence, and revocation state.
+
+Some fields should be masked or summarized. A provider matching a room may need household size, dates, accessibility, and transportation details without seeing the full assessment. A reporting analyst may need de-identified outcomes without names or contact information. A partner may see the task assigned to its organization without seeing unrelated service history.
+
+Every disclosure should be attributable: who accessed or sent what, for which purpose, to which recipient, and when.
+
+## Local Updates And Shared Truth
+
+BeaResponseCare allows profile-scoped local updates to override hosted demonstration data. This supports responsive workflows and makes newly added records visible across connected views. It also illustrates an important distinction between an effective local view and shared system state.
+
+A local edit should carry its version, timestamp, author profile, source, and synchronization status. If the hosted or remote record changes, the system needs a deterministic way to compare versions and surface conflicts.
+
+"Local updates take priority" is a display rule, not a complete conflict-resolution policy.
+
+For low-risk notes, the latest authorized change may be acceptable. For identity, eligibility, consent, and placement state, silent last-write-wins behavior is dangerous. Conflicting changes should be reviewed. The interface should show the local value, shared value, update times, and available actions: keep local, accept shared, combine nonconflicting changes, or escalate.
+
+Clearing the local profile must remove cached records and require authentication again, as the portal does. Refreshing the cache should retrieve the shared baseline without discarding unsynchronized local work. Production implementations should add encryption, server-managed access, retention policies, durable synchronization, and monitoring appropriate to protected information.
+
+## Version History Makes Correction Safe
+
+Jordan's simulated profile carries a version number and created and updated timestamps. Versioning should represent more than a counter used to prevent a save error.
+
+A useful history records:
+
+- the fields that changed;
+- the prior and new values;
+- the person or system making the change;
+- the source and reason;
+- the effective time and recorded time;
+- the version from which the change was made; and
+- whether the change was synchronized, rejected, or superseded.
+
+History supports correction without pretending the prior state never existed. It also helps staff understand why two decisions made at different times used different information.
+
+Audit history should not become a second uncontrolled copy of sensitive data. Access, retention, masking, and export rules apply to history as well as current values.
+
+## The By-Name List Is An Operating Tool
+
+The Veteran 360 table functions as a by-name list: a searchable, filterable view of people currently known to the coordinated-care network. Its purpose is operational awareness, not surveillance.
+
+Useful columns include veteran ID, name, household, current housing, eligibility, active programs, responsible provider, coordinated-entry status, and duplicate-review state. Search and filters help teams find records requiring action. Sorting supports workload review. Export must be controlled because a convenient CSV can become an unmanaged copy of sensitive information.
+
+The list becomes valuable when it leads to action:
+
+- potential duplicates open an identity-review workflow;
+- pending documentation opens an eligibility task;
+- reassessment status links to coordinated entry;
+- missing ownership prompts assignment;
+- expiring consent prompts review; and
+- an active request opens the connected case and placement context.
+
+Counts should be interpreted carefully. The number of profiles is not automatically the number of veterans served in a period. A person can have several requests, cases, and placements. Outcome reporting requires an explicit grain and time window.
+
+## Governance Questions Belong In The Design
+
+A Veteran 360 record crosses organizational and program boundaries, so governance cannot be postponed until deployment.
+
+The participating network should define:
+
+- who may create a profile;
+- which evidence supports an identity match;
+- who can resolve a duplicate;
+- which system owns each summary field;
+- which roles can view or edit each category;
+- how consent and other authorities are evaluated;
+- how corrections and disputes are handled;
+- how long current and historical information is retained;
+- which exports are permitted;
+- how local and shared records synchronize; and
+- how veterans can request access or correction where applicable.
+
+These rules should be visible in training and embedded in workflow. A policy document alone will not prevent a user from editing the wrong source, exporting too much information, or merging two profiles without sufficient evidence.
+
+## Measuring A Trustworthy Veteran 360
+
+Completeness is not the only measure of quality. A profile filled with stale or weakly sourced values can be more harmful than a visibly incomplete one.
+
+Useful measures include:
+
+- profiles with a stable identifier and customer reference;
+- possible duplicates awaiting review and their age;
+- confirmed false matches and incorrect merges;
+- household relationships with current effective dates;
+- eligibility summaries linked to a program determination;
+- active enrollments with an accountable organization;
+- profiles with a responsible provider and active case owner;
+- summary values with source and freshness metadata;
+- consent indicators linked to valid scope and dates;
+- local changes waiting for synchronization;
+- conflicts awaiting resolution; and
+- correction requests completed within the expected time.
+
+The strongest quality question is whether an authorized coordinator can understand what is known, what is uncertain, where each fact came from, and what action is required next.
+
+## Chapter Takeaways
+
+- Veteran 360 should be a connected view, not a warehouse containing every detail.
+- Stable system identifiers anchor continuity without exposing sensitive identity attributes.
+- Duplicate resolution requires evidence, accountable review, reversibility, and preserved history.
+- Household membership, eligibility, programs, and ownership all change over time.
+- Summary values need source, effective time, verification state, and a path to the owning record.
+- Different records may disagree because they answer different questions.
+- Consent and minimum-necessary access govern what each participant can see.
+- Local overrides need provenance, synchronization state, and deliberate conflict resolution.
+- Version history makes corrections traceable without erasing the past.
+- A by-name list should lead to owned work, not merely display people.
+
+## Reflection Questions
+
+1. Which attributes in your current master profile are truly durable, and which are temporary summaries?
+2. Can staff tell which system owns each value and when it was last verified?
+3. What evidence is required before two person records can be merged?
+4. Can a duplicate resolution be reviewed and reversed safely?
+5. Does your household model preserve membership changes over time?
+6. Are eligibility and program participation tied to specific programs, dates, and decisions?
+7. How does the interface distinguish responsible provider, case owner, and partner task owner?
+8. What happens when a local update conflicts with a newer shared record?
+9. Can veterans request correction without losing the history needed for accountability?
+
+## Next: Assessment, Priority, And Consent
+
+Chapter 5 examines three decisions that strongly influence the path from request to placement: how teams assess need, how they convert evidence into explainable priority, and how they verify permission before information moves across the care network.
+
 
 
