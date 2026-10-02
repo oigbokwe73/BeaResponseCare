@@ -1230,5 +1230,361 @@ The strongest quality question is whether an authorized coordinator can understa
 
 Chapter 5 examines three decisions that strongly influence the path from request to placement: how teams assess need, how they convert evidence into explainable priority, and how they verify permission before information moves across the care network.
 
+# Chapter 5: Assessment, Priority, And Consent
+
+> Assessment helps a team understand need. Priority helps it sequence action. Consent helps it move information responsibly. None of the three should be reduced to a checkbox or score.
+
+Jordan Edwards's request is moving through coordinated entry.
+
+The intake says the lodging request is high priority. Assessment `CEA-40489` describes Jordan as unsheltered tonight and records vulnerability, medical-risk, and safety-risk scores of four. Yet the same assessment recommends low priority, preserves low as the final priority, records no override, and sends the matter to eligibility review.
+
+That combination should make a coordinator pause.
+
+It may reflect a valid scoring method, a program-specific rule, a value imported from another stage, an incomplete assessment, or a data-quality problem. What it must not become is an unexplained instruction that the next user follows simply because the system displayed it.
+
+At the same time, Jordan's consent record `CNS-50489` is active. It permits a participating housing provider to receive placement and stay details, together with care-coordination information, for a housing-referral purpose. The consent was captured electronically, has not been revoked, and has defined effective and expiration dates.
+
+That record makes some sharing possible. It does not make every disclosure appropriate.
+
+Assessment, priority, and consent sit close together in the workflow because each influences what happens next. They remain separate disciplines because each answers a different question:
+
+- **Assessment:** what is known about the person's current situation, risks, strengths, and eligibility context?
+- **Priority:** how should this request be sequenced relative to other work, and why?
+- **Consent:** what information may be shared, with whom, for what purpose, and during which period?
+
+Conflating them creates risk. A high score is not consent. Active consent is not eligibility. Eligibility does not determine urgency. A priority label does not replace professional judgment.
+
+## Assessment Is Structured Listening
+
+An assessment should create a consistent way to understand circumstances without pretending that every life can be represented by a score.
+
+The strongest assessments combine structured questions with professional observation and the veteran's own account. Structured fields support fairness, comparison, and reporting. Narrative context explains what the fields cannot. The assessor's role is not to translate a person into numbers; it is to make the basis for a service decision visible.
+
+Jordan's coordinated-entry record includes:
+
+- veteran and household identifiers;
+- assessment type and time;
+- current housing crisis;
+- vulnerability, medical-risk, and safety-risk scores;
+- program eligibility;
+- recommended and final priority;
+- override status and reason;
+- referral decision and provider;
+- assessor identity;
+- workflow status, county, organization, and version.
+
+Together, these fields can support an auditable decision. They do so only when definitions are clear, required evidence is known, and changes remain traceable.
+
+```mermaid
+flowchart TD
+    A["Confirm identity and assessment purpose"] --> B["Explain process and privacy boundary"]
+    B --> C["Capture current housing crisis"]
+    C --> D["Assess vulnerability, medical, and safety factors"]
+    D --> E["Review program eligibility context"]
+    E --> F["Calculate recommendation with reasons"]
+    F --> G["Apply accountable human review"]
+    G --> H["Record final priority and referral decision"]
+    H --> I["Name owner, deadline, and reassessment trigger"]
+```
+
+The flow begins with purpose and ends with a next action. An assessment that produces information but no owned decision is incomplete.
+
+## Define The Question Before Selecting The Tool
+
+Different assessments serve different purposes. An initial safety screen, coordinated-entry assessment, program-eligibility review, clinical evaluation, and housing-stability reassessment should not be treated as interchangeable.
+
+Before using a tool, the team should state:
+
+- the decision the assessment informs;
+- the population and setting for which it was designed;
+- the evidence required;
+- the roles authorized to conduct and review it;
+- how often it must be updated;
+- how the person can correct or contextualize an answer; and
+- what the score does not determine.
+
+If a tool was created to support referral sequencing, it should not quietly become a diagnosis or permanent label. If a score is validated only for a particular population, applying it elsewhere can produce false precision.
+
+The interface should show the assessment type and version. A changed question, weight, threshold, or policy can alter results. Without a version, two identical-looking scores may have been produced by different rules.
+
+## Scores Need Meaning, Not Just Arithmetic
+
+A score is useful when users understand how it was produced and what action it supports.
+
+Jordan's record contains three component scores of four and a low recommended priority. The numbers alone do not explain the result. A coordinator needs to know the allowed ranges, weights, thresholds, missing-data rules, and any program conditions applied after scoring.
+
+An explainable recommendation should preserve:
+
+- each input value;
+- the source and time of the input;
+- unanswered or unverified items;
+- the rule or model version;
+- intermediate calculations where relevant;
+- the recommendation;
+- plain-language reasons; and
+- the limits of the recommendation.
+
+The system should not invent certainty when data is missing. Treating an unanswered safety question as zero can suppress urgency. Treating every unknown as maximum risk can overwhelm the queue. Missingness needs its own meaning and, where necessary, a review task.
+
+Scores should support a conversation. The assessor can say, "The current recommendation reflects the housing and safety information we reviewed. A supervisor will examine the conflict with the intake priority before the referral is finalized."
+
+That statement is more useful than displaying a color without explanation.
+
+## Priority Is A Decision With A Clock
+
+Priority answers two related questions: how quickly must action occur, and how should limited capacity be sequenced?
+
+A label such as critical, high, medium, or low has little value unless it is connected to an operational response. The organization should define an acknowledgment target, review deadline, escalation rule, and reassessment interval for each level.
+
+Priority can be influenced by immediacy, safety, health risk, exposure, household composition, accessibility, transportation, discharge timing, available alternatives, and program rules. Those factors should be visible rather than hidden inside a label.
+
+A defensible priority record includes:
+
+- recommended priority and reasons;
+- final priority;
+- decision maker and decision time;
+- service-level deadline;
+- override status and reason;
+- queue position where policy permits it;
+- reassessment date or trigger; and
+- escalation history.
+
+Priority is time-sensitive. A request that was low priority three days ago may become urgent when temporary lodging ends or weather conditions change. A high-priority request may be resolved or safely stabilized. The system needs events and reassessment, not a permanent badge.
+
+## Reconcile Conflicts Instead Of Hiding Them
+
+Jordan's records present a clear conflict: the intake request is high priority, while assessment recommends and finalizes low priority. The correct response is not to choose whichever value was updated last.
+
+The two values may answer different questions. Intake priority may describe immediate placement urgency. Assessment priority may describe a program's coordinated-entry sequence. If so, both can be valid, but the interface must label their meaning. If they are intended to represent the same decision, the difference requires review.
+
+```mermaid
+flowchart TD
+    A["Detect differing priority values"] --> B["Identify each value's purpose and owner"]
+    B --> C{"Same decision context?"}
+    C -- "No" --> D["Display both with clear labels"]
+    C -- "Yes" --> E["Open reconciliation review"]
+    E --> F["Compare evidence, time, and rule version"]
+    F --> G{"Can conflict be resolved?"}
+    G -- "Yes" --> H["Record final decision and reason"]
+    G -- "No" --> I["Escalate and apply protective interim action"]
+    H --> J["Notify affected owners"]
+    I --> J
+    D --> J
+```
+
+A protective interim action might preserve the faster response deadline until an authorized reviewer resolves the difference. That choice should be governed by policy and recorded, not improvised invisibly.
+
+The reconciliation record should retain both original values. Overwriting the intake priority would destroy evidence about what the intake team knew and how the case evolved.
+
+## Human Override Is A Safety Feature
+
+An override is sometimes described as a weakness in standardization. Properly designed, it is part of accountable standardization.
+
+No scoring method can represent every circumstance. New information may arrive after the assessment. A rare risk may not appear in the model. Policy may authorize a response based on an imminent event that does not affect the calculated score.
+
+An authorized override should require:
+
+- a selected final priority;
+- a specific reason;
+- the evidence or event supporting the change;
+- the authorized reviewer;
+- date and time;
+- the original recommendation; and
+- any required supervisor approval.
+
+The original result remains visible. This makes the process reviewable and allows program leaders to examine whether overrides reveal gaps in the tool.
+
+Overrides should be monitored for patterns, not punished automatically. A high override rate may indicate weak training, inconsistent policy, missing inputs, biased thresholds, or a changing service environment. A zero override rate may indicate a perfect tool, but it may also mean staff are afraid or unable to challenge it.
+
+## Fairness Requires More Than Consistency
+
+Applying the same questions to everyone does not guarantee a fair result.
+
+Assessment tools can reproduce inequities present in historical data, documentation access, service availability, or institutional contact. A person with extensive system history may accumulate more recorded evidence than someone facing comparable need without prior services. A person who communicates differently may be scored as less vulnerable if the process rewards a particular narrative style.
+
+Teams should examine outcomes across relevant groups while protecting privacy and avoiding unsupported conclusions. They should test whether missing information, language access, disability, geography, referral source, or assessor patterns influence recommendations and wait times.
+
+Fairness review requires both quantitative monitoring and direct feedback from veterans, assessors, and community partners. A statistical difference can identify where to look; it does not explain the cause by itself.
+
+The organization should publish enough about its prioritization rules for participants to understand the process without exposing private records or enabling manipulation. Veterans should know how to correct facts and request review.
+
+## Consent Begins With A Specific Decision
+
+After assessment and priority, the team may need to share information with a provider. Consent should be evaluated for that disclosure, not treated as a general status inherited from the profile.
+
+Jordan's consent record identifies:
+
+- permitted organization: participating housing provider;
+- information categories: placement and stay details, and care coordination;
+- purpose: housing referral;
+- effective and expiration dates;
+- electronic signature captured;
+- not revoked;
+- active status; and
+- disclosure history.
+
+Before sending Jordan's information to a candidate provider, the coordinator should verify five elements:
+
+1. **Person:** does the consent belong to the correct veteran?
+2. **Recipient:** is the intended recipient within the permitted organization or recipient class?
+3. **Information:** are the fields being shared within the allowed categories?
+4. **Purpose:** is the disclosure actually for the recorded housing-referral purpose?
+5. **Time and status:** is the consent effective, unexpired, signed, and not revoked now?
+
+If any element fails, the workflow should stop or route to an authorized exception process. The presence of an active badge is not enough.
+
+## Minimum Necessary Is A Design Rule
+
+Even when a disclosure is permitted, the team should share only what the recipient needs for the task.
+
+A provider considering a temporary lodging match may need requested dates, guest count, accessibility requirements, service-animal status, transportation considerations, and a contact route. The provider may not need Jordan's full vulnerability assessment, prior program history, or detailed eligibility evidence.
+
+Minimum-necessary practice should be built into the interface. Instead of exporting the complete profile, the system can assemble a purpose-specific referral package. Users can see which categories are included and remove optional information before sending.
+
+Templates should be governed and versioned. If a referral package changes, the organization should know which fields were included at the time of a past disclosure.
+
+## Consent Can Change
+
+Consent is not permanent. It may expire, be narrowed, or be revoked.
+
+Revocation should record who received the request, when it became effective, its scope, and which active workflows may be affected. It should stop future disclosures within scope while preserving the fact that earlier authorized disclosures occurred.
+
+The system should identify pending actions that rely on the consent. A provider referral not yet sent may need to be halted. A placement already underway may require review under applicable policy or another authority. Staff need clear guidance; an unexplained red status can lead either to improper sharing or unnecessary interruption of care.
+
+Renewal should not silently extend an old consent. The veteran should receive a current explanation of recipients, information, purpose, and duration. The new record should link to the prior one while retaining its own signature evidence and effective dates.
+
+## Every Disclosure Creates A Record
+
+Jordan's simulated consent shows seven disclosures and a latest disclosure time. A count is useful for orientation, but accountable sharing requires event detail.
+
+A disclosure event should capture:
+
+- consent or other authority used;
+- veteran identifier;
+- sender and organization;
+- recipient and organization;
+- information categories sent;
+- purpose;
+- date and time;
+- delivery method and status;
+- related request, case, or placement; and
+- corrections, failures, or recipient acknowledgments.
+
+```mermaid
+sequenceDiagram
+    participant U as Authorized coordinator
+    participant C as Consent service
+    participant P as Referral package
+    participant R as Housing provider
+    participant L as Disclosure log
+
+    U->>C: Check person, recipient, categories, purpose, and time
+    C-->>U: Return permitted scope and current status
+    U->>P: Build minimum-necessary package
+    P-->>U: Preview included fields
+    U->>R: Send authorized referral
+    R-->>U: Acknowledge receipt
+    U->>L: Record authority, content categories, recipient, and result
+```
+
+If transmission fails, the event should record failure rather than implying disclosure succeeded. A retry should link to the same attempted action so reporting does not count duplicate successful disclosures.
+
+Veterans should be able to receive an understandable accounting of disclosures where policy requires or permits it. Technical logs may support investigation, but they are not a substitute for a readable history.
+
+## Separate Consent From Other Authority
+
+Not every lawful or necessary action rests on consent, and consent should not be requested when a person has no meaningful choice.
+
+Programs may rely on law, contract, public-duty authority, emergency provisions, or another defined basis. The system should record the actual authority and apply its limits. Calling every basis "consent" weakens informed choice and confuses staff when consent is withdrawn.
+
+This chapter does not provide legal advice. Participating organizations must define applicable federal, state, program, and contractual requirements with qualified privacy and legal professionals. The product's job is to make those approved rules operable: clear categories, role-based access, purpose checks, dates, audit events, and escalation paths.
+
+## Local Records Need The Same Discipline
+
+BeaResponseCare allows assessment and consent records to be edited in a local profile and backed by IndexedDB. Local-first behavior improves responsiveness and supports demonstration workflows, but it does not lower the standard for sensitive decisions.
+
+An assessment edit should preserve its version, author, timestamp, original recommendation, and override history. A local consent update must not appear as shared authorization until synchronization is confirmed. If a remote update conflicts with a local record, the system should block high-risk disclosure until an authorized user resolves the conflict.
+
+The user needs honest state labels:
+
+- saved locally;
+- queued for synchronization;
+- synchronized;
+- rejected;
+- conflict detected; or
+- superseded.
+
+"Saved" and "authorized for network use" are not always the same thing.
+
+## Operating Measures
+
+Teams should measure whether assessment, priority, and consent produce safe and timely action rather than merely count completed forms.
+
+Useful measures include:
+
+- assessments completed within the expected time;
+- percentage with missing or unverified inputs;
+- recommendation-to-final-priority agreement;
+- override rate, reasons, and approval time;
+- unresolved priority conflicts and their age;
+- reassessments triggered by material changes;
+- referral decisions with an accountable owner and deadline;
+- active consents with complete recipient, category, purpose, and date fields;
+- attempted disclosures blocked because authority was absent or unclear;
+- disclosures successfully logged and acknowledged;
+- revocations applied to pending workflows within target time; and
+- corrections or appeals resolved within policy.
+
+Metrics require context. A rise in blocked disclosures may indicate a consent problem, or it may show that a new control is preventing inappropriate sharing. Teams should investigate causes before rewarding a lower number.
+
+## An Operational Review Checklist
+
+Before a referral advances, the coordinator should be able to answer:
+
+1. Is this the correct veteran and household?
+2. Is the assessment type appropriate for the decision?
+3. Are material answers current, sourced, and verified?
+4. Are missing values visible rather than converted silently to zero?
+5. Can the priority recommendation be explained in plain language?
+6. Does the final priority differ from another active record?
+7. If an override exists, is its reason and authority documented?
+8. Is there an owner, service-level deadline, and reassessment trigger?
+9. Does the planned disclosure have a valid authority?
+10. Does consent cover this recipient, information, purpose, and time?
+11. Is the referral package limited to the minimum necessary information?
+12. Will the disclosure and its result be logged?
+
+## Chapter Takeaways
+
+- Assessment structures understanding but does not reduce a person to a score.
+- Tools must be used for a defined decision, population, version, and review cycle.
+- Scores require visible inputs, rules, missing-data handling, reasons, and limits.
+- Priority must connect to a response clock, owner, and reassessment trigger.
+- Conflicting priorities should be reconciled or clearly distinguished, never silently overwritten.
+- Accountable overrides are a safety feature and a source of learning.
+- Fairness requires outcome review, accessible processes, and meaningful correction paths.
+- Consent must be checked for person, recipient, information, purpose, and current status.
+- Minimum-necessary disclosure should be designed into referral packages.
+- Revocation stops future sharing within scope but does not erase prior events.
+- Disclosure history needs event detail, not only a count.
+- Local records must communicate whether a decision is saved, synchronized, conflicted, or usable across the network.
+
+## Reflection Questions
+
+1. What decision is each assessment in your organization intended to support?
+2. Can staff explain how a recommendation was calculated without reading source code?
+3. How are missing answers represented, and could they suppress urgency?
+4. What happens when intake and assessment assign different priorities?
+5. Who can override a recommendation, and what evidence must be preserved?
+6. Can a user verify consent scope at the exact moment information is sent?
+7. Do referral packages omit information the recipient does not need?
+8. How quickly do revocations reach pending referrals and active workflows?
+9. Can a veteran understand and challenge the facts used in a priority decision?
+
+## Next: Understanding Provider Capacity
+
+Chapter 6 moves from demand to supply. It examines how provider profiles, units, availability windows, accessibility features, transportation, rates, freshness, and temporary holds combine to answer a practical question: which option is genuinely usable for this veteran at this moment?
+
+
 
 
