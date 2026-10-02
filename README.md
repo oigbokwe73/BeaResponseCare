@@ -3359,12 +3359,12 @@ Improving one metric can create harm elsewhere.
 
 ```mermaid
 flowchart LR
-    A["Goal: reduce time to placement"] --> B["Primary measure:<br/>median request-to-confirmation time"]
-    A --> C["Quality guardrail:<br/>verified suitable check-in"]
-    A --> D["Equity guardrail:<br/>time by accommodation need and geography"]
-    A --> E["Capacity guardrail:<br/>expired holds and urgent relocations"]
-    A --> F["Experience guardrail:<br/>clarity, choice, and repeated questions"]
-    A --> G["Finance guardrail:<br/>rate exceptions and avoidable cost"]
+    A["Goal: reduce time to placement"] --> B["Primary measure:median request-to-confirmation time"]
+    A --> C["Quality guardrail:verified suitable check-in"]
+    A --> D["Equity guardrail:time by accommodation need and geography"]
+    A --> E["Capacity guardrail:expired holds and urgent relocations"]
+    A --> F["Experience guardrail:clarity, choice, and repeated questions"]
+    A --> G["Finance guardrail:rate exceptions and avoidable cost"]
 ```
 
 Examples include:
