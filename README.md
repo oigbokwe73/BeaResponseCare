@@ -2703,6 +2703,405 @@ Before considering a handoff closed, the coordinator should be able to answer:
 
 Chapter 9 examines how browser profiles, local storage, IndexedDB, hosted baselines, remote submissions, refresh, conflict handling, and clear synchronization states can preserve work during disruption without misleading users about what the wider network knows.
 
+# Chapter 9: Local-First Operations And Trust
+
+> Reliability is not pretending the network never fails. It is preserving work, reporting state honestly, and giving people a safe path forward when systems disagree.
+
+A coordinator is completing a placement update when the network connection drops.
+
+The provider has accepted the reservation. The hold is nearing expiration. The coordinator has entered the authorized rate, reservation number, and check-in instructions. If the page discards the work, time is lost and the provider may release the room. If the page claims the update was shared when it exists only in the browser, another coordinator may act on stale information.
+
+Local-first design addresses the first risk. Honest synchronization design addresses the second.
+
+BeaResponseCare saves profile-scoped changes in the browser, mirrors larger drafts and workflow events into IndexedDB, loads hosted JSON as a shared demonstration baseline, and can submit selected operations to a remote endpoint through a centralized API service. Users can refresh hosted data while preserving local changes, inspect cached entries, clear specific scopes, or clear all application data and sign out.
+
+This architecture demonstrates resilience and transparent state. It is not, by itself, a production identity, authorization, encryption, or synchronization platform.
+
+Trust depends on making that boundary visible.
+
+## Local-First Is An Operating Choice
+
+A local-first workflow lets the person using the application continue meaningful work before every network round trip completes.
+
+That can improve care coordination in several ways:
+
+- form progress survives navigation or interruption;
+- new local records appear immediately in search and connected tables;
+- staff can review hosted baseline data when a remote write service is unavailable;
+- operations can be queued for later submission;
+- slower network responses do not block basic editing; and
+- users receive immediate confirmation that work was preserved on their device.
+
+The goal is not to avoid shared systems. Coordinated care requires shared state. The goal is to separate local durability from remote acceptance so that one can succeed when the other temporarily cannot.
+
+Local-first design introduces new obligations. The system must identify which device and profile own the work, protect sensitive data, reconcile changes, prevent duplicate submissions, and tell users what the network does and does not know.
+
+## Three Storage Layers, Three Purposes
+
+BeaResponseCare uses browser storage in distinct ways.
+
+### Session Cache
+
+Published JSON datasets are cached for the browser session. This reduces repeated network loading and provides a stable baseline while a user moves between pages. A force refresh bypasses that cache and requests the latest hosted data.
+
+Session data is shared across the active browser session, not treated as a user's authored record. It should be replaceable without losing local edits.
+
+### Profile-Scoped Local Storage
+
+Each local profile has a generated profile ID. Records created or edited under that profile are stored with profile-scoped keys and override matching hosted rows in the effective view.
+
+This layer supports immediate reads, table updates, typeahead search, profile settings, activity history, and smaller drafts. It is synchronous and convenient, but capacity is limited and browser scripts within the same origin can potentially access it.
+
+### IndexedDB
+
+IndexedDB provides a larger, transactional browser database. BeaResponseCare mirrors profile data and stores intake drafts, placement workflows, remote receipts, response captures, activity events, document metadata, inventory events, versioned records, and connected-record changes.
+
+It is more suitable than `localStorage` for structured collections and larger durable data, but it is still local browser storage. It is not automatically encrypted, backed up across devices, or visible to another coordinator.
+
+```mermaid
+flowchart TD
+    H["Hosted JSON baseline"] --> E["Effective page view"]
+    S["Session dataset cache"] --> E
+    L["Profile-scoped local overrides"] --> E
+    I["IndexedDB durable drafts and events"] --> L
+    E --> U["User edits and workflow actions"]
+    U --> L
+    U --> I
+    U --> Q["Remote submission queue"]
+    Q --> R["Shared endpoint"]
+    R --> C["Receipt, response, or conflict"]
+    C --> I
+    C --> E
+```
+
+The effective view combines sources. The source of each value must remain inspectable.
+
+## Profiles Create Scope, Not Identity Assurance
+
+The portal creates a local profile ID after login and uses it to scope records. A profile can include display name, role, organization, job title, contact information, county coverage, and non-sensitive routing notes.
+
+This provides useful separation on one browser. Jordan's intake draft saved under one profile does not automatically become another profile's draft. Activity history can attribute a local action to the active profile.
+
+However, a generated browser profile is not verified identity. It does not prove that the person is employed by the organization, holds the selected role, or is authorized to access protected information. A browser role selector is a user-experience control, not production authorization.
+
+A production service needs authenticated identities, organization membership, role and policy enforcement, session expiration, multifactor authentication where appropriate, device controls, revocation, and server-side audit protection.
+
+The distinction should be stated inside the product and its documentation. A convincing interface must not create false confidence about the security boundary.
+
+## The Effective Record Needs Provenance
+
+When local updates override hosted data, the screen shows the most useful current value for that profile. This is an effective-record rule.
+
+It should not erase provenance.
+
+For every locally changed record, the user should be able to determine:
+
+- the hosted or shared baseline version;
+- the local value and version;
+- who made the local change;
+- when it was made;
+- whether it was submitted remotely;
+- whether the remote service accepted it;
+- whether a newer shared version exists; and
+- what action is required.
+
+The interface can use clear labels such as local change, synchronized, conflict, or refresh available. Color alone is not sufficient; states need text and accessible status announcements.
+
+A local update may be the most recent change visible to one coordinator without being the shared truth for the network. The product must communicate both facts at once.
+
+## Save And Submit Are Different Actions
+
+BeaResponseCare separates local save from save and submit in placement workflows. That distinction should be preserved throughout a local-first system.
+
+**Save locally** means the browser has durably recorded the operation for the active profile. The application can restore it after navigation or restart, subject to browser storage availability.
+
+**Submit remotely** means the application attempted to send a JSON operation to the configured endpoint. Success requires an accepted response, not only the absence of a client error.
+
+The remote envelope includes a schema version, operation ID, operation type, send time, profile, organization, tenant, role, and payload. The operation ID supports tracing and should also support idempotent retry at the server.
+
+Useful user-facing states include:
+
+- draft;
+- saving locally;
+- saved locally;
+- queued to submit;
+- submitting;
+- accepted remotely;
+- rejected;
+- timed out with result unknown;
+- conflict detected; and
+- retry required.
+
+A timeout is especially important. The server may have accepted the request even though the browser did not receive the response. Blindly creating a new operation can duplicate the action. The client should retry with the same idempotency identity or query status when the server supports it.
+
+## Honest State Builds Trust
+
+Users should not have to interpret a spinning icon or inspect developer tools to know whether work is safe.
+
+Every action should answer three questions:
+
+1. Was my work preserved on this device?
+2. Was it accepted by the shared service?
+3. Is any follow-up required?
+
+Examples of honest messages include:
+
+- "Draft saved to this browser profile at 2:14 p.m."
+- "Saved locally. Remote submission is not configured."
+- "Submission timed out. Your local copy is safe; confirmation is still unknown."
+- "The shared record changed after you opened it. Review both versions before saving."
+- "Hosted data refreshed. Your profile's local changes were preserved."
+- "All BeaResponseCare browser data was removed. Sign in to create a new profile."
+
+These messages are more trustworthy than a generic success toast.
+
+## Refresh Must Not Mean Reset
+
+Users refresh data because they want newer shared information. They do not expect refresh to discard unsynchronized work.
+
+BeaResponseCare force-loads the selected hosted datasets while preserving profile-local additions and overrides. The effective view is then rebuilt from the refreshed baseline and local state.
+
+A safe refresh process should:
+
+1. identify locally modified records;
+2. fetch the latest shared baseline without replacing the active view prematurely;
+3. compare record identities and versions;
+4. retain nonconflicting local additions and overrides;
+5. surface conflicts;
+6. update the effective view atomically; and
+7. report what changed.
+
+If refresh fails, the existing data should remain available and the interface should state that it may be stale. Failure should not leave a half-cleared table.
+
+Refresh also needs a freshness indicator. A user should know when each dataset was last retrieved and whether the display includes local changes newer than that time.
+
+## Conflicts Are Decisions, Not Errors To Hide
+
+BeaResponseCare applies optimistic version checks to high-risk tables such as Veteran 360, assessments, consent, units, and partner operations. An editor records the version it opened. Before saving, the application checks whether the current record version still matches. If not, it blocks the stale update and asks the user to refresh.
+
+This prevents silent overwriting, but a production conflict workflow should go further.
+
+```mermaid
+flowchart TD
+    A["User opens version 4"] --> B["Shared or local record advances to version 5"]
+    B --> C["User attempts save from version 4"]
+    C --> D["Detect version mismatch"]
+    D --> E["Preserve attempted changes"]
+    E --> F["Show version 4 draft and version 5 current state"]
+    F --> G{"Resolution"}
+    G -- "Accept current" --> H["Discard draft with confirmation"]
+    G -- "Reapply nonconflicting fields" --> I["Create version 6 with reason"]
+    G -- "Escalate high-risk conflict" --> J["Assign review owner"]
+    H --> K["Record outcome"]
+    I --> K
+    J --> K
+```
+
+The system should preserve the user's attempted work so conflict protection does not become data loss. It can identify field-level differences, allow safe reapplication, and require specialized review for identity, consent, eligibility, holds, and placement state.
+
+Last-write-wins may be acceptable for some low-risk preferences. It is not a universal policy.
+
+## A Queue Turns Failure Into Managed Work
+
+If remote submission fails, the local operation should enter an explicit queue rather than remain hidden in a toast history.
+
+A queue item needs:
+
+- operation and correlation IDs;
+- operation type and related record references;
+- payload schema version;
+- created and last-attempt times;
+- attempt count;
+- current state;
+- latest error category;
+- next retry time;
+- user or system that initiated it; and
+- cancellation or supersession relationship.
+
+Retry policy should distinguish temporary network failure, timeout, authentication rejection, validation error, authorization denial, rate limiting, and version conflict. Some errors can retry automatically with backoff. Others require user action or administrator intervention.
+
+The queue should be visible. Users need to know whether unresolved submissions could affect another coordinator's decisions.
+
+```mermaid
+stateDiagram-v2
+    [*] --> LocalOnly: saved on device
+    LocalOnly --> Queued: remote submission requested
+    Queued --> Submitting: retry window reached
+    Submitting --> Synchronized: accepted with receipt
+    Submitting --> Queued: temporary failure
+    Submitting --> Unknown: timeout after send
+    Submitting --> Rejected: validation or authorization failure
+    Submitting --> Conflict: newer shared version
+    Unknown --> Submitting: status check or idempotent retry
+    Rejected --> Queued: corrected and resubmitted
+    Conflict --> Queued: reviewed and reconciled
+    Synchronized --> [*]
+```
+
+An operation should not remain in an infinite retry loop. Thresholds and escalation make persistent failures visible.
+
+## Receipts Make Remote Acceptance Verifiable
+
+When a remote service accepts an operation, BeaResponseCare captures the operation ID, HTTP status, response, row key where available, and submission time in profile storage and IndexedDB.
+
+A durable receipt lets the application answer which operation was accepted and how the shared service referenced it. It supports support-desk investigation, reconciliation, and safe retry decisions.
+
+The operational page does not need to display raw request and response payloads. Users usually need a concise status, shared reference, accepted time, and link to audit detail. Raw payloads may contain sensitive data and should be access-controlled, retained deliberately, and redacted in logs.
+
+Receipts should be linked to the local event. An unlinked success response can prove that something happened without proving which workflow state it completed.
+
+## Clearing Data Is A Security Workflow
+
+Local-first applications must make deletion dependable.
+
+BeaResponseCare offers several scopes: clear a specific cached entry, clear profile-local changes, clear the session cache, or clear all application data. Clearing all removes application-prefixed local and session entries, clears IndexedDB, deactivates the profile, and forces the user back to login.
+
+That final behavior matters. If data is removed but the visible session remains active, the interface can imply that a protected workspace is still authenticated.
+
+A deletion workflow should:
+
+- explain which data will be removed;
+- warn about unsynchronized operations;
+- require deliberate confirmation;
+- clear every relevant storage layer;
+- verify that entries are gone;
+- revoke or end the active session where appropriate;
+- report partial failure; and
+- avoid deleting unrelated origin data unless that scope is intentional.
+
+IndexedDB operations are asynchronous. The interface should not announce complete deletion before the transaction finishes. Other tabs and service workers may also hold state and require coordination.
+
+On a managed device, server-side session revocation, cache controls, remote wipe, and device policy may be necessary beyond browser deletion.
+
+## Local Sensitive Data Requires Protection
+
+Browser persistence creates a copy of operational information on a device. The organization must decide whether that is permitted and under what controls.
+
+Relevant protections include:
+
+- managed and encrypted devices;
+- supported browser versions;
+- strong authentication and short idle sessions;
+- least-privilege access;
+- minimizing locally stored fields;
+- retention and automatic expiration;
+- protection from cross-site scripting;
+- content security policy;
+- dependency and supply-chain controls;
+- no secrets embedded in browser-delivered code;
+- safe exports and download handling; and
+- incident response for lost or shared devices.
+
+Encrypting a value in JavaScript with a key shipped to the same browser does not solve the core secret-management problem. Remote API credentials belong behind a trusted server or gateway. A static frontend cannot keep a reusable secret from an authorized browser user or an attacker who gains script execution.
+
+Local-first should reduce service disruption without expanding collection beyond what the workflow requires.
+
+## Activity History Supports Accountability
+
+BeaResponseCare records local saves, role decisions, remote submissions, failures, and conflicts in a profile activity history and durable IndexedDB entries.
+
+An activity event should identify the actor profile, organization, event type, affected record, time, result, and relevant reference. It should avoid storing complete sensitive payloads when identifiers and categorized changes are sufficient.
+
+Client-side history supports usability and troubleshooting. Production audit requires server-side, access-controlled, tamper-resistant records because a user can clear or alter browser data.
+
+The two forms of history serve different purposes:
+
+- local history helps the user resume work and understand recent actions;
+- authoritative audit supports investigation, compliance, and cross-user accountability.
+
+The interface should not call a mutable local list an immutable audit log.
+
+## Recovery Must Be Tested
+
+Resilience claims need scenario testing, not only happy-path checks.
+
+Teams should test:
+
+- closing the browser during each intake step;
+- losing connectivity before and after remote send;
+- a timeout where the server accepted the operation;
+- storage quota exhaustion;
+- IndexedDB unavailable or blocked by another tab;
+- malformed cached JSON;
+- a hosted refresh while local edits exist;
+- two tabs editing the same versioned record;
+- profile switching with unsaved work;
+- clearing profile data, session data, and all application data;
+- browser upgrade or schema migration;
+- clock skew affecting deadlines and timestamps; and
+- remote rejection for authentication, authorization, validation, and conflict.
+
+Testing should verify the user message, preserved data, effective view, retry behavior, activity history, and shared result. A technically handled exception can still be an operational failure if the user does not know what to do next.
+
+## Measures Of Local-First Reliability
+
+Useful measures include:
+
+- local save success and failure rate;
+- draft recovery rate;
+- IndexedDB availability and write failures;
+- operations queued for remote submission;
+- age of oldest unsynchronized operation;
+- remote acceptance, rejection, timeout, and conflict rates;
+- retries per accepted operation;
+- duplicate operations detected server-side;
+- refresh success and dataset age;
+- version conflicts and resolution time;
+- partial or failed deletion attempts;
+- sessions correctly ended after full clear; and
+- support incidents caused by misleading state.
+
+Measurements should not expose payload contents unnecessarily. Operational telemetry can use event categories, durations, counts, and pseudonymous references with controlled access.
+
+## A Trust Checklist
+
+Before describing a workflow as local-first, the team should be able to answer:
+
+1. What is stored in session cache, `localStorage`, IndexedDB, and the shared service?
+2. Can the user identify the source and synchronization state of a displayed value?
+3. Are local save and remote submission distinct actions and messages?
+4. Does refresh preserve unsynchronized work and surface conflicts?
+5. Can a timed-out operation be retried without duplication?
+6. Are version conflicts blocked without discarding the user's attempted edits?
+7. Is the submission queue visible and actionable?
+8. Are remote receipts linked to the operations they acknowledge?
+9. Does clearing all data verify every storage layer and force a new login?
+10. Are browser profiles described honestly as local scope rather than verified identity?
+11. Are reusable API credentials kept out of browser-delivered code?
+12. Have interruption, quota, multi-tab, migration, and partial-failure scenarios been tested?
+
+## Chapter Takeaways
+
+- Local-first design preserves work before every network operation succeeds.
+- Shared care still requires authoritative network state and honest synchronization.
+- Session cache, profile-local storage, and IndexedDB serve different purposes.
+- A browser profile scopes data but does not prove identity or authorization.
+- Effective local records must retain provenance and shared-version context.
+- Local save, remote send, and remote acceptance are separate states.
+- Refresh should update the baseline without silently resetting local work.
+- Version conflicts are decisions requiring evidence, not errors to hide.
+- Failed submissions need a visible, typed, retryable queue.
+- Remote receipts connect accepted operations to shared references.
+- Clearing data is a security workflow that must include every storage layer and end the session.
+- Client activity history supports recovery, while authoritative audit belongs on trusted infrastructure.
+
+## Reflection Questions
+
+1. Which work can users safely continue when the network is unavailable?
+2. Can a user tell whether another coordinator can see a locally saved change?
+3. What happens when the server accepts an operation but the browser times out?
+4. Does refreshing data preserve local edits and reveal version conflicts?
+5. Where are queued submissions visible, and who owns old failures?
+6. Can users clear every local copy and verify that deletion completed?
+7. Does your product language overstate a browser profile as authentication or a local history as immutable audit?
+8. Which sensitive fields truly need to persist on the device?
+9. Have you tested recovery from interruption at every high-risk workflow step?
+
+## Next: Measuring Outcomes
+
+Chapter 10 turns the connected journey into a measurement system. It defines the grain, denominators, time windows, quality checks, equity views, service-level measures, and outcome indicators needed to understand whether faster workflows are producing safer placements and more stable transitions.
+
+
 
 
 
