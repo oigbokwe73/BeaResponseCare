@@ -3593,7 +3593,7 @@ Without this map, integrations can create competing sources of truth.
 ```mermaid
 flowchart LR
     U["Veterans, coordinators, providers, leaders"] --> W["Accessible web application"]
-    W --> G["API gateway or backend-for-frontend"]
+    W --> G["API gateway or backend for frontend"]
     G --> I["Identity and policy service"]
     G --> C["Care coordination services"]
     G --> Q["Query and reporting APIs"]
